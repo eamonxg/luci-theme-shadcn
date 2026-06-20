@@ -46,3 +46,33 @@
     }
   }
 }
+
+/* Lucide SVGs as <img> ship with black strokes; parent color does not apply */
+.card-header img,
+.login-input-icon img,
+img.shadcn-icon {
+  filter: brightness(0) saturate(100%);
+  opacity: 0.65;
+}
+
+html[data-darkmode="true"] .card-header img,
+html[data-darkmode="true"] .login-input-icon img {
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
+#sidebar img.shadcn-icon {
+  filter: brightness(0) saturate(100%);
+  opacity: 0.65;
+}
+
+html[data-darkmode="true"] #sidebar img.shadcn-icon {
+  filter: brightness(0) saturate(100%) invert(1);
+  opacity: 0.7;
+}
+
+.card-header button:hover img,
+#sidebar .sidebar-nav-item.active img,
+#sidebar .sidebar-accordion-item.active img,
+#sidebar .sidebar-nav-parent:hover img {
+  opacity: 1;
+}
