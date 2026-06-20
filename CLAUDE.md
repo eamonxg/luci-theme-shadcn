@@ -12,6 +12,8 @@ cp .env.example .env   # set VITE_OPENWRT_HOST / VITE_OPENWRT_SSH_HOST for proxy
 pnpm dev      # Vite dev server (proxies LuCI to the router; optional scp of *.ut on save)
 pnpm build    # Clean + build production assets to htdocs/luci-static/
 pnpm clean    # Remove build output only
+pnpm gen:tokens       # Regenerate src/media/_tokens.css from tokens/*.js
+pnpm check:contrast   # Check muted text tokens meet WCAG AA contrast
 ```
 
 `VITE_OPENWRT_HOST` defaults to `http://192.168.1.1`. Set `VITE_OPENWRT_SSH_HOST` (e.g. `root@192.168.1.1`) to scp `ucode/template/themes/shadcn/*.ut` to `/usr/share/ucode/luci/template/themes/shadcn/` whenever a `.ut` file changes; leave empty to disable. Optional `VITE_OPENWRT_SSH_KEY` for a dedicated private key.
@@ -40,12 +42,13 @@ No test suite or linter CLI. Prettier (with `prettier-plugin-tailwindcss`) runs 
 
 ## CSS
 
-Style with TailwindCSS v4 `@apply`, using CSS Nesting (`&:hover`, `&[disabled]`, `.parent &`, etc.) for scoped selectors — this is the dominant pattern across every component file. Fall back to raw CSS declarations only when `@apply` can't express the rule: custom properties, `@keyframes`/`animation`/`filter`, `clip-path`, `backdrop-filter`, `oklch(from var(...) ...)` color functions, and inline SVG data-URI backgrounds.
+Style with TailwindCSS v4 `@apply`, using CSS Nesting (`&:hover`, `&[disabled]`, `.parent &`, etc.) for scoped selectors — this is the dominant pattern across every component file. Fall back to raw CSS declarations only when `@apply` can't express the rule: custom properties, `@keyframes`/`animation`/`filter`, `clip-path`, `backdrop-filter`, and inline SVG data-URI backgrounds.
 
 `main.css` import order is meaningful (later imports win the cascade): `_tokens.css` → `_base.css` → `_layout.css` → `components/_*.css` → `_utilities.css` → `_patches.css`. New component styles get their own `components/_name.css`, imported before `_utilities.css`/`_patches.css`.
 
-- **`_tokens.css`**: design tokens as OKLCH custom properties in `:root`, with dark-mode overrides under `[data-darkmode="true"]`. Shared by `main.css` and `login.css`. Keep colors token-based — add/extend tokens here and expose new ones via the `@theme inline` block.
-- **`login.css`**: separate Vite build entry for the login page; does **not** import `main.css`. It re-imports `_tokens.css` and declares its own (smaller) `@theme inline` map — a token needed on the login page must be added to both `main.css`'s and `login.css`'s `@theme inline` blocks.
+- **Token source**: edit input colors in `tokens/defaults.js`, derivations and baked-alpha variants in `tokens/spec.js`, then run `pnpm gen:tokens`. Do not edit generated `src/media/_tokens.css` directly.
+- **`_tokens.css`**: generated flat OKLCH custom properties for light and dark modes plus the shared `@theme inline` mapping. It is imported by both `main.css` and `login.css`; runtime token-based `color-mix()` and relative `oklch(from …)` are prohibited.
+- **`login.css`**: separate Vite build entry for the login page; it does **not** import `main.css`, but re-imports the generated `_tokens.css`.
 - **`_patches.css`**: scoped compatibility overrides for third-party LuCI app pages, keyed on the `[data-page="..."]` attribute that `header.ut` derives from the request path (or a unique class/id). Add overrides here rather than in component files; revisit when the upstream app's markup changes.
 - Dark mode: `@custom-variant dark` keyed on `[data-darkmode=true]`, set by an inline script in `header.ut` before paint (reads `localStorage['shadcn.theme']`) to avoid a flash of the wrong theme.
 - **Icons, two sources**: `.dev/src/assets/icons/` (Lucide SVGs) are referenced from CSS via the `@assets` alias as `mask-image`/`mask`, so they inherit `currentColor`; `.dev/public/shadcn/icons/` are SVGs referenced directly via `<img>`/JS (sidebar, menu, login, theme toggle) and copied verbatim to `htdocs/luci-static/shadcn/icons/`.

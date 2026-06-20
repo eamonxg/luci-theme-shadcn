@@ -4,8 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm clean && pnpm gen:tokens && vite build && pnpm check:colors",
+    "build": "pnpm clean && pnpm gen:tokens && pnpm check:contrast && vite build && pnpm check:colors",
     "check:colors": "node scripts/check-built-css.js",
+    "check:contrast": "node scripts/check-token-contrast.js",
     "gen:tokens": "node scripts/gen-tokens.js",
     "clean": "node scripts/clean.js",
     "format": "prettier --config prettier.config.mjs --ignore-path ../.prettierignore --write .. --ignore-unknown",

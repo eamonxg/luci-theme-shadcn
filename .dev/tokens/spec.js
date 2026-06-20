@@ -28,9 +28,9 @@ const common = {
   warning_fg: ["const", "oklch(0.20 0.05 75)"],
   terminal_foreground: ["const", "oklch(0.85 0.08 155)"],
   // Shared derived
-  muted_foreground: ["mix", "text", "bg", 0.5],
+  muted_foreground: ["mix", "text", "bg", 0.57],
   secondary_foreground: ["mix", "text", "bg", 0.85],
-  sidebar_muted: ["mix", "text", "bg", 0.48],
+  sidebar_muted: ["mix", "text", "bg", 0.57],
   focus_ring: ["alpha", "brand", 0.5],
 };
 
