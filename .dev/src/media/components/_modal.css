@@ -3,7 +3,7 @@
     @apply pointer-events-none fixed top-0 bottom-0 hidden overflow-auto bg-transparent;
 
     .modal-overlay-active & {
-      @apply pointer-events-auto inset-0 z-50 grid place-items-center bg-overlay-base/60 backdrop-blur-sm;
+      @apply pointer-events-auto inset-0 z-50 grid place-items-center bg-overlay-base-a60 backdrop-blur-sm;
     }
 
     > .modal {
@@ -19,16 +19,16 @@
       p { @apply text-sm leading-relaxed text-foreground; }
 
       > ul {
-        @apply overflow-auto rounded-lg border border-border bg-background/60 p-3;
+        @apply overflow-auto rounded-lg border border-border bg-background-a60 p-3;
       }
 
       label.btn {
-        @apply border border-border bg-background/60 text-foreground hover:border-border;
+        @apply border border-border bg-background-a60 text-foreground hover:border-border;
       }
 
       pre {
         @apply overflow-auto;
-        &.errors { @apply border-destructive/60 bg-destructive/20 text-destructive; }
+        &.errors { @apply border-destructive-a60 bg-destructive-a20 text-destructive; }
       }
 
       pre + pre { @apply mt-3; }
@@ -48,12 +48,12 @@
           @apply font-mono not-italic no-underline shadow-sm;
         }
 
-        ins { @apply rounded border border-success bg-success/80 text-success-fg; }
-        del { @apply rounded border border-destructive bg-destructive/80 text-destructive-fg; }
-        var { @apply rounded border border-info bg-info/80 text-info-fg; }
+        ins { @apply rounded border border-success bg-success-a80 text-success-fg; }
+        del { @apply rounded border border-destructive bg-destructive-a80 text-destructive-fg; }
+        var { @apply rounded border border-info bg-info-a80 text-info-fg; }
 
         .uci-change-legend {
-          @apply mt-4 grid grid-cols-2 gap-3 rounded-lg border border-border bg-background/60 p-4;
+          @apply mt-4 grid grid-cols-2 gap-3 rounded-lg border border-border bg-background-a60 p-4;
 
           .uci-change-legend-label {
             @apply flex items-center gap-2 text-sm font-medium text-foreground;

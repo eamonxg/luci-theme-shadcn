@@ -40,7 +40,7 @@
       &.cbi-section-table-descr { @apply hidden; }
 
       &.cbi-rowstyle-1 { @apply bg-panel-bg; }
-      &.cbi-rowstyle-2 { @apply bg-label-surface/50; }
+      &.cbi-rowstyle-2 { @apply bg-label-surface-a50; }
     }
 
     th, .th {

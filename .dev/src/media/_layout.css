@@ -324,7 +324,7 @@ span[data-indicator] {
 /* ── Mobile sidebar overlay ───────────────────────────────────────── */
 
 #sidebar-overlay {
-  @apply pointer-events-none fixed inset-0 z-30 bg-black/50 opacity-0 transition-opacity duration-200 md:hidden;
+  @apply pointer-events-none fixed inset-0 z-30 bg-overlay-base-a50 opacity-0 transition-opacity duration-200 md:hidden;
 
   &.active { @apply pointer-events-auto opacity-100; }
 }

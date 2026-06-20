@@ -1,18 +1,18 @@
 @layer components {
   .cbi-tooltip {
-    @apply absolute z-50 max-w-xs scale-95 rounded-lg border border-border/60 bg-panel-bg px-3 py-2 text-xs text-foreground opacity-0 shadow-lg backdrop-blur-sm transition-all duration-200 ease-out break-normal whitespace-normal;
+    @apply absolute z-50 max-w-xs scale-95 rounded-lg border border-border-a60 bg-panel-bg px-3 py-2 text-xs text-foreground opacity-0 shadow-lg backdrop-blur-sm transition-all duration-200 ease-out break-normal whitespace-normal;
 
     &.error {
-      @apply border-destructive/40 bg-destructive text-destructive-fg;
+      @apply border-destructive-a40 bg-destructive text-destructive-fg;
     }
     &.success {
-      @apply border-success/40 bg-success text-success-fg;
+      @apply border-success-a40 bg-success text-success-fg;
     }
     &.info {
-      @apply border-info/40 bg-info text-info-fg;
+      @apply border-info-a40 bg-info text-info-fg;
     }
     &.notice {
-      @apply border-warning/40 bg-warning text-warning-fg;
+      @apply border-warning-a40 bg-warning text-warning-fg;
     }
   }
 

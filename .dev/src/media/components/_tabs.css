@@ -9,15 +9,15 @@
       &[data-errors] {
         @apply after:absolute after:-right-1.5 after:-top-0.5 after:z-20 after:inline-flex after:min-h-4 after:min-w-4 after:items-center after:justify-center after:rounded-full after:bg-destructive after:px-1 after:py-0.5 after:text-xs after:font-semibold after:text-destructive-fg after:content-[attr(data-errors)];
 
-        > a { @apply border border-destructive/50; }
+        > a { @apply border border-destructive-a50; }
       }
 
       > a {
-        @apply inline-flex items-center justify-center rounded-md border border-transparent px-3 py-1 text-sm font-medium whitespace-nowrap text-muted-foreground no-underline transition-all hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50;
+        @apply inline-flex items-center justify-center rounded-md border border-transparent px-3 py-1 text-sm font-medium whitespace-nowrap text-muted-foreground no-underline transition-all hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring-a50;
       }
 
       &.cbi-tab > a {
-        @apply bg-background text-foreground shadow-sm dark:border dark:border-input dark:bg-input/30;
+        @apply bg-background text-foreground shadow-sm dark:border dark:border-input dark:bg-input-a30;
       }
     }
   }
