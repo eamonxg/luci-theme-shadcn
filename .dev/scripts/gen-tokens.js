@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import Color from "colorjs.io";
 import { resolveMode } from "../tokens/resolve.js";
-import { FIXED, ALPHAS } from "../tokens/spec.js";
+import { ALPHAS } from "../tokens/spec.js";
 
 const kebab = (s) => s.replace(/_/g, "-");
 const snake = (s) => s.replace(/-/g, "_");
