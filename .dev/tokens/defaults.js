@@ -17,7 +17,7 @@ export const DEFAULTS = {
   dark: {
     bg: "oklch(0.10 0.006 270)",
     surface: "oklch(0.17 0.004 264)",
-    text: "oklch(0.978 0.002 264)",
+    text: "oklch(0.90 0.006 264)",
     brand: "oklch(0.567 0.158 275)",
     on_brand: "oklch(1 0 0)",
     success: "oklch(0.637 0.175 147)",
