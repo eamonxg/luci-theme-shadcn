@@ -17,6 +17,9 @@ importers:
       '@types/node':
         specifier: ^25.9.1
         version: 25.9.1
+      colorjs.io:
+        specifier: ^0.6.1
+        version: 0.6.1
       prettier:
         specifier: ^3.8.3
         version: 3.8.3
@@ -293,6 +296,9 @@ packages:
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
+
+  colorjs.io@0.6.1:
+    resolution: {integrity: sha512-8lyR2wHzuIykCpqHKgluGsqQi5iDm3/a2IgP2GBZrasn2sBRkE4NOGsglZxWLs/jZQoNkmA/KM/8NV16rLUdBg==}
 
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
@@ -766,6 +772,8 @@ snapshots:
   buffer-from@1.1.2: {}
 
   clsx@2.1.1: {}
+
+  colorjs.io@0.6.1: {}
 
   commander@2.20.3: {}
 
