@@ -805,10 +805,15 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 `_layout.css`:
 - `bg-black/50` → `bg-overlay-base-a50`
 
-- [ ] **Step 2: Repo-wide verify: zero opacity modifiers remain in source**
+- [ ] **Step 2: Verify these files have no opacity modifiers left**
 
-Run: `cd luci-theme-shadcn && grep -rnE "(bg|text|border|ring|from|to|fill|stroke|shadow|outline)-[a-z-]+/[0-9]+" .dev/src/media`
-Expected: no output.
+Run (comprehensive — any utility prefix, including `scrollbar-thumb-`):
+`cd luci-theme-shadcn && grep -rnE "[a-z-]+/[0-9]+" .dev/src/media/components/_modal.css .dev/src/media/components/_table.css .dev/src/media/components/_tabs.css .dev/src/media/components/_tooltip.css .dev/src/media/_layout.css | grep -vE "z-[0-9]|/\*|grid-|col-|row-|w-[0-9]|h-[0-9]|inset-|top-|gap-"`
+Expected: no output for these five files.
+
+Run a whole-tree check of what remains (these are KNOWN and handled in Task 12 — do NOT fix them here):
+`cd luci-theme-shadcn && grep -rnoE "[a-z-]+-(foreground)/[0-9]+|oklch\(from" .dev/src/media`
+Expected ONLY: `_base.css` lines `scrollbar-thumb-foreground/30` (×2) and `login.css` `oklch(from …)` (×7). Both are deliberately deferred to Task 12. If anything ELSE appears, it was missed by Tasks 9–11 — fix it before proceeding.
 
 - [ ] **Step 3: Build**
 
@@ -827,31 +832,34 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 
 ---
 
-## Task 12: Replace `oklch(from …)` relative-color in login.css
+## Task 12: Replace login.css relative-color + _base.css scrollbar (last runtime-color sources)
 
 **Files:**
-- Modify: `.dev/src/media/login.css:96-97,129-130,147,151-152`
+- Modify: `.dev/tokens/spec.js` (extend `ALPHAS`)
+- Modify: `.dev/src/media/login.css:96-97,129-130,147,151-152` (7 `oklch(from …)`)
+- Modify: `.dev/src/media/_base.css:3,7` (`scrollbar-thumb-foreground/30` ×2)
 
 **Interfaces:**
-- Consumes: alpha utilities/vars from `_tokens.css` (`--primary-a20`, `--primary-a10`, `--destructive-a30`, `--destructive-a8`?, `--foreground-a5`?).
+- Consumes: alpha utilities/vars from `_tokens.css` (`--primary-a20`, `--primary-a10`, `--primary-a70`, `--destructive-a30`, `--destructive-a8`, `--foreground-a5`, and the `bg-`/utility form `foreground-a30`).
 
-> Two needed alphas are not yet in `ALPHAS`: `foreground` at 5%, `destructive` at 8%, `primary` at 70%. Add them so the login replacements use baked tokens.
+> Needed alphas not yet in `ALPHAS`: `primary` at 10/20/70, `destructive` at 8, `foreground` at 5 AND 30. The `foreground/30` is used by the scrollbar plugin utility in `_base.css` (this was missed by the original inventory — it is real and must be covered or the built CSS keeps a `color-mix(in oklab, var(--foreground) 30%, transparent)`).
 
-- [ ] **Step 1: Extend `ALPHAS` in `tokens/spec.js` for the login alphas**
+- [ ] **Step 1: Extend `ALPHAS` in `tokens/spec.js`**
 
 In `tokens/spec.js`, update these `ALPHAS` entries:
 - `primary: [5, 15, 25, 60, 90]` → `primary: [5, 10, 15, 20, 25, 60, 70, 90]`
-- `destructive: [10, 20, 30, 40, 50, 60, 70, 80, 90]` → add `8`: `destructive: [8, 10, 20, 30, 40, 50, 60, 70, 80, 90]`
-- add new entry `foreground: [5],`
+- `destructive: [10, 20, 30, 40, 50, 60, 70, 80, 90]` → `destructive: [8, 10, 20, 30, 40, 50, 60, 70, 80, 90]`
+- add new entry `foreground: [5, 30],`
 
 - [ ] **Step 2: Regenerate tokens**
 
 Run: `cd luci-theme-shadcn/.dev && pnpm gen:tokens`
-Expected: `gen-tokens: wrote src/media/_tokens.css`
+Expected: `gen-tokens: wrote src/media/_tokens.css`. Confirm new tokens exist:
+`grep -cE -- '--color-(primary-a70|destructive-a8|foreground-a5|foreground-a30):' src/media/_tokens.css` → `4`.
 
 - [ ] **Step 3: Replace the relative-color declarations in `login.css`**
 
-Replace each raw declaration with the matching CSS var (these are plain CSS properties, not `@apply` — use `var(--…)`):
+These are plain CSS properties (not `@apply`) — use `var(--…)`:
 
 - Line 96 `border: 1px solid oklch(from var(--primary) l c h / 0.2);` → `border: 1px solid var(--primary-a20);`
 - Line 97 `background-color: oklch(from var(--primary) l c h / 0.1);` → `background-color: var(--primary-a10);`
@@ -861,22 +869,26 @@ Replace each raw declaration with the matching CSS var (these are plain CSS prop
 - Line 151 `border-color: oklch(from var(--primary) l c h / 0.7);` → `border-color: var(--primary-a70);`
 - Line 152 `background-color: oklch(from var(--primary) l c h / 0.1);` → `background-color: var(--primary-a10);`
 
-- [ ] **Step 4: Verify no relative-color remains in source**
+- [ ] **Step 4: Replace the scrollbar opacity modifier in `_base.css` (both lines 3 and 7)**
 
-Run: `cd luci-theme-shadcn && grep -rn "oklch(from" .dev/src/media`
-Expected: no output.
+In `.dev/src/media/_base.css`, change every `scrollbar-thumb-foreground/30` to `scrollbar-thumb-foreground-a30` (these are inside `@apply` lists — keep the rest of each list intact; do not reorder classes).
 
-- [ ] **Step 5: Build**
+- [ ] **Step 5: Verify no runtime color sources remain in source**
+
+Run: `cd luci-theme-shadcn && grep -rn "oklch(from" .dev/src/media; grep -rnoE "[a-z-]+/[0-9]+" .dev/src/media | grep -E "(primary|secondary|muted|foreground|background|border|input|ring|destructive|success|warning|info|label-surface|overlay-base|black|white)/[0-9]"`
+Expected: no output (both greps empty).
+
+- [ ] **Step 6: Build**
 
 Run: `cd luci-theme-shadcn/.dev && pnpm build 2>&1 | tail -3`
 Expected: `✓ built`.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 cd luci-theme-shadcn
 git add -A
-git commit -m "refactor: replace login.css relative-color with baked-alpha tokens
+git commit -m "refactor: replace login relative-color and base scrollbar with alpha tokens
 
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ```
@@ -936,17 +948,24 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 Run: `cd luci-theme-shadcn/.dev && pnpm build 2>&1 | tail -5`
 Expected: `✓ built`, both `main.css` and `login.css` emitted.
 
-- [ ] **Step 2: Assert zero runtime color computation in BOTH built files**
+- [ ] **Step 2: Assert zero runtime computation OF OUR TOKENS in BOTH built files**
+
+The target metric is `color-mix(in oklab, var(--<token>) …)` (Tailwind opacity modifiers over our theme tokens) and `oklch(from …)` (relative color) — these must be 0. NOTE: Tailwind v4 also emits `@supports (color: color-mix(in lab, red, red))` feature-detection queries and may emit one `color-mix(in oklab, currentcolor …)` from a plugin; these are framework artifacts (aurora's shipped CSS contains them too), do NOT depend on our tokens, and are NOT failures. So assert on the our-token form, not raw `color-mix(`.
 
 Run:
 ```bash
 cd luci-theme-shadcn && \
-echo "main color-mix: $(grep -c 'color-mix(' htdocs/luci-static/shadcn/main.css)" && \
-echo "main oklch(from: $(grep -c 'oklch(from' htdocs/luci-static/shadcn/main.css)" && \
-echo "login color-mix: $(grep -c 'color-mix(' htdocs/luci-static/shadcn/login.css)" && \
-echo "login oklch(from: $(grep -c 'oklch(from' htdocs/luci-static/shadcn/login.css)"
+echo "main our-token color-mix: $(grep -oc 'color-mix(in oklab, var(--' htdocs/luci-static/shadcn/main.css)" && \
+echo "main oklch(from: $(grep -oc 'oklch(from' htdocs/luci-static/shadcn/main.css)" && \
+echo "login our-token color-mix: $(grep -oc 'color-mix(in oklab, var(--' htdocs/luci-static/shadcn/login.css)" && \
+echo "login oklch(from: $(grep -oc 'oklch(from' htdocs/luci-static/shadcn/login.css)"
 ```
-Expected: all four counts `0`. (If `main color-mix` is nonzero, run `grep -oE "color-mix\([^)]*\)" htdocs/luci-static/shadcn/main.css | sort -u` to find the source utility and fix the corresponding component file.)
+Expected: all four counts `0`. (Baseline before Tasks 9–12 was 51 in main.css.) If nonzero, run `grep -oE "color-mix\(in oklab, var\(--[a-z-]+\)[^)]*\)" htdocs/luci-static/shadcn/main.css | sort | uniq -c` to find the offending token/utility and trace it to the source `@apply` that still uses an opacity modifier.
+
+- [ ] **Step 2b: Confirm only the expected framework artifacts remain**
+
+Run: `cd luci-theme-shadcn && grep -oE "color-mix\([^)]*\)" htdocs/luci-static/shadcn/main.css | grep -v "in oklab, var(--" | sort -u`
+Expected: only `color-mix(in lab, red, red)` (the `@supports` query) and at most `color-mix(in oklab, currentcolor 50%, transparent)`. Anything else here means a non-token computation slipped in — investigate before sign-off.
 
 - [ ] **Step 3: Confirm prior fixes survived**
 

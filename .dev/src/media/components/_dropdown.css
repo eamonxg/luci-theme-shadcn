@@ -59,7 +59,7 @@
         > li {
           @apply flex;
 
-          &[selected] { @apply bg-primary/15 text-primary; }
+          &[selected] { @apply bg-primary-a15 text-primary; }
           &[unselectable] { @apply opacity-40; }
 
           .hide-open { @apply hidden; }

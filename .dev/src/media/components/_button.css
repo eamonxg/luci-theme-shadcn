@@ -24,11 +24,11 @@
   .cbi-button-link,
   .cbi-button-up,
   .cbi-button-down {
-    @apply border-secondary bg-secondary text-secondary-foreground hover:bg-secondary/80;
+    @apply border-secondary bg-secondary text-secondary-foreground hover:bg-secondary-a80;
   }
 
   .drag-handle {
-    @apply border-muted bg-muted text-muted-foreground hover:bg-muted/80;
+    @apply border-muted bg-muted text-muted-foreground hover:bg-muted-a80;
   }
 
   .btn.primary,
@@ -37,19 +37,19 @@
   .cbi-button-reload,
   .cbi-button-add,
   .cbi-button-edit {
-    @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    @apply border-primary bg-primary text-primary-foreground hover:bg-primary-a90;
   }
 
   .cbi-button-positive,
   .cbi-button-fieldadd,
   .cbi-button-save {
-    @apply border-primary/25 bg-primary/15 text-primary hover:bg-primary/25;
+    @apply border-primary-a25 bg-primary-a15 text-primary hover:bg-primary-a25;
   }
 
   .cbi-button-negative,
   .cbi-section-remove .cbi-button,
   .cbi-button-reset,
   .cbi-button-remove {
-    @apply border-destructive bg-destructive text-destructive-fg hover:bg-destructive/90;
+    @apply border-destructive bg-destructive text-destructive-fg hover:bg-destructive-a90;
   }
 }

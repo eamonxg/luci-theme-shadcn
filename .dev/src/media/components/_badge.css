@@ -2,10 +2,10 @@
   .label {
     @apply inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground;
 
-    &.important { @apply bg-info/15 text-info; }
-    &.warning   { @apply bg-warning/15 text-warning-fg; }
-    &.success   { @apply bg-success/15 text-success; }
-    &.notice    { @apply bg-warning/15 text-warning-fg; }
+    &.important { @apply bg-info-a15 text-info; }
+    &.warning   { @apply bg-warning-a15 text-warning-fg; }
+    &.success   { @apply bg-success-a15 text-success; }
+    &.notice    { @apply bg-warning-a15 text-warning-fg; }
   }
 
   .zonebadge {
