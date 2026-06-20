@@ -45,8 +45,16 @@ const themeColors = [...Object.keys(light), ...Object.keys(lightA)]
   .map((k) => `  --color-${kebab(k)}: var(--${kebab(k)});`)
   .join("\n");
 
+// Add aliases for backward compatibility
+const aliases = [
+  `  --color-sidebar-fg: var(--sidebar-foreground);`,
+  `  --color-terminal-fg: var(--terminal-foreground);`,
+].join("\n");
+
 const THEME = `@theme inline {
 ${themeColors}
+
+${aliases}
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);

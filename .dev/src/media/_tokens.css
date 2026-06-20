@@ -272,6 +272,9 @@
   --color-background-a60: var(--background-a60);
   --color-ring-a50: var(--ring-a50);
 
+  --color-sidebar-fg: var(--sidebar-foreground);
+  --color-terminal-fg: var(--terminal-foreground);
+
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 
