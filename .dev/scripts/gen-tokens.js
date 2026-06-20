@@ -59,12 +59,14 @@ ${aliases}
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 
+  /* Radius ladder driven by a single knob; at 0.5rem it matches the
+     Tailwind default scale (rounded-lg = 0.5rem). Tune --radius-base
+     to scale all corners for custom-radius support. */
   --radius-sm: calc(var(--radius-base) * 0.5);
-  --radius: calc(var(--radius-base) * 0.75);
-  --radius-md: var(--radius-base);
-  --radius-lg: calc(var(--radius-base) * 1.5);
-  --radius-xl: calc(var(--radius-base) * 2);
-  --radius-full: 9999px;
+  --radius: calc(var(--radius-base) * 0.5);
+  --radius-md: calc(var(--radius-base) * 0.75);
+  --radius-lg: var(--radius-base);
+  --radius-xl: calc(var(--radius-base) * 1.5);
 }
 `;
 

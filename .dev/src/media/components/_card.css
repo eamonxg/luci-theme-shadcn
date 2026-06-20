@@ -1,6 +1,6 @@
 @layer components {
   .cbi-section {
-    @apply mb-4 overflow-visible rounded-lg border border-panel-border bg-panel-bg p-4 shadow-sm;
+    @apply mb-4 overflow-visible rounded-lg border border-panel-border bg-panel-bg p-4;
 
     &[data-tab-title]         { @apply m-0 p-0; }
     &[data-tab-active="true"] { @apply mb-4 p-4; }

@@ -23,8 +23,8 @@
   --panel-bg: oklch(1 0 0);
   --destructive: oklch(0.55 0.20 25);
   --ring: oklch(0.567 0.158 275);
-  --border: oklch(88.04% 0.0061 275);
-  --input: oklch(88.04% 0.0061 275);
+  --border: oklch(89.65% 0.0058 275);
+  --input: oklch(89.65% 0.0058 275);
   --sidebar-bg: oklch(0.985 0.004 275);
   --sidebar-foreground: oklch(0.18 0.02 275);
   --sidebar-accent-fg: oklch(0.18 0.02 275);
@@ -44,11 +44,11 @@
   --muted: oklch(95% 0.004 275);
   --secondary: oklch(93.5% 0.004 275);
   --label-surface: oklch(96.3% 0.004 275);
-  --panel-border: oklch(88.04% 0.0061 275);
+  --panel-border: oklch(89.65% 0.0058 275);
   --primary-hover: oklch(62.7% 0.158 275);
   --sidebar-active-bg: oklch(56.7% 0.158 275 / 0.12);
   --sidebar-active-fg: oklch(48.7% 0.158 275);
-  --sidebar-border: oklch(88.04% 0.0061 275);
+  --sidebar-border: oklch(89.65% 0.0058 275);
   --terminal-bg: oklch(14% 0.02 264);
   --warning-soft-fg: oklch(42% 0.12 75);
   --progress-bar-start: oklch(74.02% 0.0948 275);
@@ -91,9 +91,9 @@
   --info-a30: oklch(58% 0.13 250 / 0.3);
   --info-a40: oklch(58% 0.13 250 / 0.4);
   --info-a80: oklch(58% 0.13 250 / 0.8);
-  --border-a60: oklch(88.04% 0.0061 275 / 0.6);
-  --border-a80: oklch(88.04% 0.0061 275 / 0.8);
-  --input-a30: oklch(88.04% 0.0061 275 / 0.3);
+  --border-a60: oklch(89.65% 0.0058 275 / 0.6);
+  --border-a80: oklch(89.65% 0.0058 275 / 0.8);
+  --input-a30: oklch(89.65% 0.0058 275 / 0.3);
   --label-surface-a50: oklch(96.3% 0.004 275 / 0.5);
   --overlay-base-a50: oklch(0% 0 0 / 0.5);
   --overlay-base-a60: oklch(0% 0 0 / 0.6);
@@ -123,8 +123,8 @@
   --panel-bg: oklch(0.205 0.004 264);
   --destructive: oklch(0.63 0.16 25);
   --ring: oklch(0.567 0.158 275);
-  --border: oklch(29% 0.0045 264);
-  --input: oklch(29% 0.0045 264);
+  --border: oklch(24.5% 0.0047 264);
+  --input: oklch(24.5% 0.0047 264);
   --sidebar-bg: oklch(0.159 0.005 264);
   --sidebar-foreground: oklch(0.978 0.002 264);
   --sidebar-accent-fg: oklch(0.978 0.002 264);
@@ -191,9 +191,9 @@
   --info-a30: oklch(70% 0.1 250 / 0.3);
   --info-a40: oklch(70% 0.1 250 / 0.4);
   --info-a80: oklch(70% 0.1 250 / 0.8);
-  --border-a60: oklch(29% 0.0045 264 / 0.6);
-  --border-a80: oklch(29% 0.0045 264 / 0.8);
-  --input-a30: oklch(29% 0.0045 264 / 0.3);
+  --border-a60: oklch(24.5% 0.0047 264 / 0.6);
+  --border-a80: oklch(24.5% 0.0047 264 / 0.8);
+  --input-a30: oklch(24.5% 0.0047 264 / 0.3);
   --label-surface-a50: oklch(19.5% 0.004 264 / 0.5);
   --overlay-base-a50: oklch(0% 0 0 / 0.5);
   --overlay-base-a60: oklch(0% 0 0 / 0.6);
@@ -302,10 +302,12 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 
+  /* Radius ladder driven by a single knob; at 0.5rem it matches the
+     Tailwind default scale (rounded-lg = 0.5rem). Tune --radius-base
+     to scale all corners for custom-radius support. */
   --radius-sm: calc(var(--radius-base) * 0.5);
-  --radius: calc(var(--radius-base) * 0.75);
-  --radius-md: var(--radius-base);
-  --radius-lg: calc(var(--radius-base) * 1.5);
-  --radius-xl: calc(var(--radius-base) * 2);
-  --radius-full: 9999px;
+  --radius: calc(var(--radius-base) * 0.5);
+  --radius-md: calc(var(--radius-base) * 0.75);
+  --radius-lg: var(--radius-base);
+  --radius-xl: calc(var(--radius-base) * 1.5);
 }
