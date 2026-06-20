@@ -3,9 +3,9 @@
     @apply inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground;
 
     &.important { @apply bg-info-a15 text-info; }
-    &.warning   { @apply bg-warning-a15 text-warning-fg; }
+    &.warning   { @apply bg-warning-a15 text-warning-soft-fg; }
     &.success   { @apply bg-success-a15 text-success; }
-    &.notice    { @apply bg-warning-a15 text-warning-fg; }
+    &.notice    { @apply bg-warning-a15 text-warning-soft-fg; }
   }
 
   .zonebadge {

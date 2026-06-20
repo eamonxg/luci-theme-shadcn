@@ -43,6 +43,7 @@ export const DERIVATIONS = {
     sidebar_active_fg: ["shade", "brand", -0.08],
     sidebar_border: ["const", "var:border"],
     terminal_bg: ["const", "oklch(0.14 0.02 264)"],
+    warning_soft_fg: ["const", "oklch(0.42 0.12 75)"],
     progress_bar_start: ["mix", "brand", "surface", 0.6],
     login_left_bg: ["shade", "bg", -0.05],
   },
@@ -59,6 +60,7 @@ export const DERIVATIONS = {
     sidebar_active_fg: ["shade", "brand", 0.22],
     sidebar_border: ["alpha", "text", 0.08],
     terminal_bg: ["const", "oklch(0.12 0.02 264)"],
+    warning_soft_fg: ["const", "oklch(0.86 0.10 85)"],
     progress_bar_start: ["mix", "brand", "surface", 0.6],
     login_left_bg: ["const", "oklch(0.10 0.02 264)"],
   },
@@ -82,18 +84,4 @@ export const ALPHAS = {
   "overlay-base": [50, 60],
   background: [60],
   ring: [50],
-};
-
-// Mode-specific shadow literals, emitted verbatim.
-export const FIXED = {
-  light: {
-    app_shadow_sm: "0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.04)",
-    app_shadow_md: "0 4px 16px oklch(0 0 0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.04)",
-    app_shadow_lg: "0 12px 32px oklch(0 0 0 / 0.12)",
-  },
-  dark: {
-    app_shadow_sm: "0 4px 12px oklch(0 0 0 / 0.3)",
-    app_shadow_md: "0 10px 28px oklch(0 0 0 / 0.42)",
-    app_shadow_lg: "0 20px 48px oklch(0 0 0 / 0.55)",
-  },
 };

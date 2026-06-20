@@ -50,6 +50,7 @@
   --sidebar-active-fg: oklch(48.7% 0.158 275);
   --sidebar-border: oklch(88.04% 0.0061 275);
   --terminal-bg: oklch(14% 0.02 264);
+  --warning-soft-fg: oklch(42% 0.12 75);
   --progress-bar-start: oklch(74.02% 0.0948 275);
   --login-left-bg: oklch(93.5% 0.004 275);
   --primary-a5: oklch(56.7% 0.158 275 / 0.05);
@@ -149,6 +150,7 @@
   --sidebar-active-fg: oklch(78.7% 0.158 275);
   --sidebar-border: oklch(97.8% 0.002 264 / 0.08);
   --terminal-bg: oklch(12% 0.02 264);
+  --warning-soft-fg: oklch(86% 0.1 85);
   --progress-bar-start: oklch(42.22% 0.0964 274.8);
   --login-left-bg: oklch(10% 0.02 264);
   --primary-a5: oklch(56.7% 0.158 275 / 0.05);
@@ -244,6 +246,7 @@
   --color-sidebar-active-fg: var(--sidebar-active-fg);
   --color-sidebar-border: var(--sidebar-border);
   --color-terminal-bg: var(--terminal-bg);
+  --color-warning-soft-fg: var(--warning-soft-fg);
   --color-progress-bar-start: var(--progress-bar-start);
   --color-login-left-bg: var(--login-left-bg);
   --color-primary-a5: var(--primary-a5);

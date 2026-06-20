@@ -12,7 +12,7 @@
     }
     &.warning,
     &.notice {
-      @apply border-warning-a30 bg-warning-a10 text-warning-fg;
+      @apply border-warning-a30 bg-warning-a10 text-warning-soft-fg;
     }
     &.error,
     &.danger {
