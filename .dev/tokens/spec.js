@@ -72,7 +72,7 @@ export const ALPHAS = {
   secondary: [80],
   muted: [30, 80],
   "muted-foreground": [70],
-  success: [10, 15, 40, 80],
+  success: [10, 15, 30, 40, 80],
   warning: [10, 15, 30, 40],
   info: [10, 15, 30, 40, 80],
   border: [60, 80],

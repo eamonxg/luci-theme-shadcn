@@ -9,7 +9,7 @@
   input[type="email"],
   .cbi-input-text,
   .cbi-input {
-    @apply relative rounded-lg border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/70 shadow-none transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-ring focus:outline-none;
+    @apply relative rounded-lg border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground-a70 shadow-none transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-ring focus:outline-none;
 
     .table.cbi-section-table & {
       @apply w-full;
@@ -25,7 +25,7 @@
   }
 
   textarea {
-    @apply min-h-24 w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-ring focus:outline-none;
+    @apply min-h-24 w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground-a70 transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-ring focus:outline-none;
 
     &[disabled] {
       @apply cursor-not-allowed opacity-40;

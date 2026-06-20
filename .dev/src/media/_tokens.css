@@ -72,6 +72,7 @@
   --muted-foreground-a70: oklch(58.25% 0.012 275 / 0.7);
   --success-a10: oklch(58% 0.15 150 / 0.1);
   --success-a15: oklch(58% 0.15 150 / 0.15);
+  --success-a30: oklch(58% 0.15 150 / 0.3);
   --success-a40: oklch(58% 0.15 150 / 0.4);
   --success-a80: oklch(58% 0.15 150 / 0.8);
   --warning-a10: oklch(70% 0.13 75 / 0.1);
@@ -164,6 +165,7 @@
   --muted-foreground-a70: oklch(56.85% 0.0035 264 / 0.7);
   --success-a10: oklch(63.7% 0.175 147 / 0.1);
   --success-a15: oklch(63.7% 0.175 147 / 0.15);
+  --success-a30: oklch(63.7% 0.175 147 / 0.3);
   --success-a40: oklch(63.7% 0.175 147 / 0.4);
   --success-a80: oklch(63.7% 0.175 147 / 0.8);
   --warning-a10: oklch(80% 0.12 80 / 0.1);
@@ -252,6 +254,7 @@
   --color-muted-foreground-a70: var(--muted-foreground-a70);
   --color-success-a10: var(--success-a10);
   --color-success-a15: var(--success-a15);
+  --color-success-a30: var(--success-a30);
   --color-success-a40: var(--success-a40);
   --color-success-a80: var(--success-a80);
   --color-warning-a10: var(--warning-a10);

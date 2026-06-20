@@ -1,7 +1,7 @@
 @layer components {
   .cbi-input-invalid,
   .cbi-value-error {
-    @apply !border-destructive/70 focus:!ring-destructive/40;
+    @apply !border-destructive-a70 focus:!ring-destructive-a40;
   }
 
   .cbi-value {
@@ -45,7 +45,7 @@
       }
 
       &.dragging  { @apply scale-95 cursor-grabbing opacity-50 shadow-lg; }
-      &.drag-over { @apply scale-105 border-primary/60 bg-primary/5 ring-2 ring-ring; }
+      &.drag-over { @apply scale-105 border-primary-a60 bg-primary-a5 ring-2 ring-ring; }
 
       > span,
       > code { @apply pointer-events-none w-full rounded font-mono leading-relaxed; }
@@ -54,7 +54,7 @@
     .placeholder { @apply break-all; }
 
     .add-item {
-      @apply inline-flex items-center gap-1.5 self-stretch rounded-lg border border-dashed border-border bg-transparent px-1 py-1 transition-colors duration-200 hover:border-border/80 hover:bg-muted/30;
+      @apply inline-flex items-center gap-1.5 self-stretch rounded-lg border border-dashed border-border bg-transparent px-1 py-1 transition-colors duration-200 hover:border-border-a80 hover:bg-muted-a30;
 
       > input { @apply min-w-56 flex-1; }
 

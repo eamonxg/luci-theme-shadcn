@@ -5,18 +5,18 @@
     &.modal { @apply static; }
 
     &.success {
-      @apply border-success/30 bg-success/10 text-success;
+      @apply border-success-a30 bg-success-a10 text-success;
     }
     &.info {
-      @apply border-info/30 bg-info/10 text-info;
+      @apply border-info-a30 bg-info-a10 text-info;
     }
     &.warning,
     &.notice {
-      @apply border-warning/30 bg-warning/10 text-warning-fg;
+      @apply border-warning-a30 bg-warning-a10 text-warning-fg;
     }
     &.error,
     &.danger {
-      @apply border-destructive/30 bg-destructive/10 text-destructive;
+      @apply border-destructive-a30 bg-destructive-a10 text-destructive;
     }
 
     h4, h5, pre, ul, li, p {
