@@ -31,6 +31,7 @@ No test suite or linter CLI. Prettier (with `prettier-plugin-tailwindcss`) runs 
 `htdocs/` is generated output checked into git. Rebuild it with `pnpm build`, or trigger the manual `frontend-assets-build.yml` workflow, which builds and commits `htdocs/**`.
 
 `vite.config.ts` plugins worth knowing about:
+
 - `local-serve-plugin` — serves `main.css`/`login.css`/sidebar & menu JS at their `/luci-static/...` paths during `pnpm dev` and forces a full reload on change
 - `ut-sync-plugin` — scp's changed `.ut` templates to the router over SSH (`VITE_OPENWRT_SSH_HOST`)
 - `redirect-plugin` — redirects `/` to `/cgi-bin/luci` in dev

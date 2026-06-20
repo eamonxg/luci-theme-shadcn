@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2025 eamonxg <eamonxiong@gmail.com>
+ * Licensed under the Apache License, Version 2.0.
+ */
+
 import Color from "colorjs.io";
 
 const C = (v) => (v instanceof Color ? v : new Color(v));

@@ -3,62 +3,86 @@
     @apply pointer-events-none fixed top-0 bottom-0 hidden overflow-auto bg-transparent;
 
     .modal-overlay-active & {
-      @apply pointer-events-auto inset-0 z-50 grid place-items-center bg-overlay-base-a60 backdrop-blur-sm;
+      @apply bg-overlay-base-a60 pointer-events-auto inset-0 z-50 grid place-items-center backdrop-blur-sm;
     }
 
     > .modal {
-      @apply flex w-full max-w-2xl flex-col gap-4 rounded-xl border border-border bg-panel-bg p-6 shadow-2xl backdrop-blur-lg whitespace-normal break-words;
+      @apply border-border bg-panel-bg flex w-full max-w-2xl flex-col gap-4 rounded-xl border p-6 break-words whitespace-normal shadow-2xl backdrop-blur-lg;
 
       h4 {
         @apply mb-0 text-center;
-        em { @apply font-semibold text-primary; }
+        em {
+          @apply text-primary font-semibold;
+        }
       }
 
-      h5 { @apply my-3 text-foreground; }
+      h5 {
+        @apply text-foreground my-3;
+      }
 
-      p { @apply text-sm leading-relaxed text-foreground; }
+      p {
+        @apply text-foreground text-sm leading-relaxed;
+      }
 
       > ul {
-        @apply overflow-auto rounded-lg border border-border bg-background-a60 p-3;
+        @apply border-border bg-background-a60 overflow-auto rounded-lg border p-3;
       }
 
       label.btn {
-        @apply border border-border bg-background-a60 text-foreground hover:border-border;
+        @apply border-border bg-background-a60 text-foreground hover:border-border border;
       }
 
       pre {
         @apply overflow-auto;
-        &.errors { @apply border-destructive-a60 bg-destructive-a20 text-destructive; }
+        &.errors {
+          @apply border-destructive-a60 bg-destructive-a20 text-destructive;
+        }
       }
 
-      pre + pre { @apply mt-3; }
+      pre + pre {
+        @apply mt-3;
+      }
 
       .button-row,
       div.left,
       div.right {
-        @apply flex shrink-0 gap-3 border-t border-border p-4;
+        @apply border-border flex shrink-0 gap-3 border-t p-4;
       }
 
-      div.left         { @apply justify-start; }
+      div.left {
+        @apply justify-start;
+      }
       .button-row,
-      div.right        { @apply justify-end; }
+      div.right {
+        @apply justify-end;
+      }
 
       &.uci-dialog {
-        ins, del, var {
+        ins,
+        del,
+        var {
           @apply font-mono not-italic no-underline shadow-sm;
         }
 
-        ins { @apply rounded border border-success bg-success-a80 text-success-fg; }
-        del { @apply rounded border border-destructive bg-destructive-a80 text-destructive-fg; }
-        var { @apply rounded border border-info bg-info-a80 text-info-fg; }
+        ins {
+          @apply border-success bg-success-a80 text-success-fg rounded border;
+        }
+        del {
+          @apply border-destructive bg-destructive-a80 text-destructive-fg rounded border;
+        }
+        var {
+          @apply border-info bg-info-a80 text-info-fg rounded border;
+        }
 
         .uci-change-legend {
-          @apply mt-4 grid grid-cols-2 gap-3 rounded-lg border border-border bg-background-a60 p-4;
+          @apply border-border bg-background-a60 mt-4 grid grid-cols-2 gap-3 rounded-lg border p-4;
 
           .uci-change-legend-label {
-            @apply flex items-center gap-2 text-sm font-medium text-foreground;
+            @apply text-foreground flex items-center gap-2 text-sm font-medium;
 
-            ins, del, var {
+            ins,
+            del,
+            var {
               @apply flex h-6 min-w-6 items-center justify-center rounded px-2 text-xs font-semibold;
             }
           }
@@ -68,17 +92,23 @@
           @apply mt-4 space-y-3;
 
           h5 {
-            @apply mb-2 mt-4 rounded-lg bg-muted px-3 py-2 text-sm font-semibold text-foreground first:mt-0;
+            @apply bg-muted text-foreground mt-4 mb-2 rounded-lg px-3 py-2 text-sm font-semibold first:mt-0;
           }
 
-          ins, del {
+          ins,
+          del {
             @apply block rounded-lg px-3 py-2 text-sm;
-            strong { @apply text-sm; }
+            strong {
+              @apply text-sm;
+            }
           }
 
           var {
             @apply inline-block rounded px-1.5 py-0.5 text-sm;
-            ins, del { @apply ml-1 inline-block px-1 py-px text-xs; }
+            ins,
+            del {
+              @apply ml-1 inline-block px-1 py-px text-xs;
+            }
           }
         }
       }

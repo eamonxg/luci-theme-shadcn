@@ -51,12 +51,24 @@
   animation: slideRightIn 0.6s ease forwards;
 }
 
-.animate-delay-100 { animation-delay: 0.1s; }
-.animate-delay-200 { animation-delay: 0.2s; }
-.animate-delay-300 { animation-delay: 0.3s; }
-.animate-delay-400 { animation-delay: 0.4s; }
-.animate-delay-500 { animation-delay: 0.5s; }
-.animate-delay-600 { animation-delay: 0.6s; }
+.animate-delay-100 {
+  animation-delay: 0.1s;
+}
+.animate-delay-200 {
+  animation-delay: 0.2s;
+}
+.animate-delay-300 {
+  animation-delay: 0.3s;
+}
+.animate-delay-400 {
+  animation-delay: 0.4s;
+}
+.animate-delay-500 {
+  animation-delay: 0.5s;
+}
+.animate-delay-600 {
+  animation-delay: 0.6s;
+}
 
 /* ── Layout ── */
 
@@ -78,11 +90,11 @@
 /* ── Brand block ── */
 
 .login-brand {
-  @apply flex flex-col gap-2 mb-7;
+  @apply mb-7 flex flex-col gap-2;
 }
 
 .login-logo {
-  @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl overflow-hidden;
+  @apply flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl;
   border: 1px solid var(--primary-a20);
   background-color: var(--primary-a10);
 
@@ -106,7 +118,7 @@
 }
 
 .login-divider {
-  @apply border-0 mb-7;
+  @apply mb-7 border-0;
   height: 1px;
   background-color: var(--border);
   clip-path: ellipse(44% 50% at 50% 50%);
@@ -152,7 +164,7 @@
 }
 
 .login-input-glass input {
-  @apply w-full bg-transparent py-3.5 pl-9 pr-10 text-sm;
+  @apply w-full bg-transparent py-3.5 pr-10 pl-9 text-sm;
   color: var(--foreground);
 
   &::placeholder {
@@ -191,7 +203,7 @@
 /* ── Footer ── */
 
 .login-footer {
-  @apply absolute bottom-5 left-0 right-0 px-6 text-center text-xs;
+  @apply absolute right-0 bottom-5 left-0 px-6 text-center text-xs;
   color: var(--muted-foreground);
 
   a {
@@ -218,4 +230,3 @@
     linear-gradient(160deg, oklch(18% 0.12 255) 0%, oklch(10% 0.04 270) 100%)
   );
 }
-

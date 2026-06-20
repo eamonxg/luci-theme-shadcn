@@ -12,3 +12,7 @@
 .idea/
 *.swp
 *.swo
+
+# Agent working files
+.superpowers/
+docs/superpowers/

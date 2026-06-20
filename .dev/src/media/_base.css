@@ -1,10 +1,10 @@
 @layer base {
   *:not(html) {
-    @apply scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-foreground-a30;
+    @apply scrollbar-thumb-rounded-full scrollbar-thumb-foreground-a30 scrollbar-thin scrollbar-track-transparent;
   }
 
   html {
-    @apply bg-background font-sans text-sm text-foreground scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-foreground-a30;
+    @apply bg-background text-foreground scrollbar-thumb-rounded-full scrollbar-thumb-foreground-a30 scrollbar-thin scrollbar-track-transparent font-sans text-sm;
 
     body {
       @apply flex h-screen overflow-hidden;
@@ -15,31 +15,56 @@
     }
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-sans leading-tight font-semibold tracking-tight text-foreground;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-foreground font-sans leading-tight font-semibold tracking-tight;
   }
 
-  h1 { @apply mb-4 text-2xl; }
-  h2 { @apply mb-3 text-xl; }
-  h3 { @apply mb-2 text-lg; }
-  h4 { @apply mb-2 text-base; }
-  h5 { @apply mb-1 text-sm; }
-  h6 { @apply mb-1 text-xs; }
+  h1 {
+    @apply mb-4 text-2xl;
+  }
+  h2 {
+    @apply mb-3 text-xl;
+  }
+  h3 {
+    @apply mb-2 text-lg;
+  }
+  h4 {
+    @apply mb-2 text-base;
+  }
+  h5 {
+    @apply mb-1 text-sm;
+  }
+  h6 {
+    @apply mb-1 text-xs;
+  }
 
-  hr { @apply border-0; }
+  hr {
+    @apply border-0;
+  }
 
-  strong { @apply font-semibold; }
+  strong {
+    @apply font-semibold;
+  }
 
-  abbr { @apply cursor-help; }
+  abbr {
+    @apply cursor-help;
+  }
 
-  p { @apply text-sm leading-relaxed text-foreground; }
+  p {
+    @apply text-foreground text-sm leading-relaxed;
+  }
 
   pre {
-    @apply block rounded-lg border border-border bg-muted px-3 py-2 font-mono text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap break-words;
+    @apply border-border bg-muted text-muted-foreground block rounded-lg border px-3 py-2 font-mono text-sm leading-relaxed break-words whitespace-pre-wrap;
   }
 
   code {
-    @apply rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-muted-foreground;
+    @apply bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-sm;
   }
 
   a {
@@ -47,14 +72,14 @@
   }
 
   var {
-    @apply font-mono text-primary;
+    @apply text-primary font-mono;
   }
 
   small {
-    @apply text-xs font-normal text-muted-foreground;
+    @apply text-muted-foreground text-xs font-normal;
   }
 
   em {
-    @apply font-medium italic text-muted-foreground;
+    @apply text-muted-foreground font-medium italic;
   }
 }

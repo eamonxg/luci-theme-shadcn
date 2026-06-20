@@ -1,0 +1,1 @@
+pnpm --dir .dev lint-staged

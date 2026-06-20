@@ -5,32 +5,44 @@
 
   .left {
     @apply text-left!;
-    &:is(td) { @apply md:text-left!; }
+    &:is(td) {
+      @apply md:text-left!;
+    }
   }
 
   .right {
     @apply text-right!;
-    &:is(td) { @apply md:text-right!; }
+    &:is(td) {
+      @apply md:text-right!;
+    }
   }
 
   .center {
     @apply text-center!;
-    &:is(td) { @apply md:text-center!; }
+    &:is(td) {
+      @apply md:text-center!;
+    }
   }
 
   .top {
     @apply align-top!;
-    &:is(td) { @apply md:align-top!; }
+    &:is(td) {
+      @apply md:align-top!;
+    }
   }
 
   .bottom {
     @apply align-bottom!;
-    &:is(td) { @apply md:align-bottom!; }
+    &:is(td) {
+      @apply md:align-bottom!;
+    }
   }
 
   .middle {
     @apply align-middle!;
-    &:is(td) { @apply md:align-middle!; }
+    &:is(td) {
+      @apply md:align-middle!;
+    }
   }
 
   .nowrap:not(span) {
@@ -47,7 +59,7 @@
 
   .spinning {
     @apply relative pl-7!;
-    @apply before:absolute before:left-1.5 before:top-1/2 before:size-4 before:-translate-y-1/2 before:animate-spin before:bg-current before:mask-[url('@assets/icons/loader-2.svg')] before:mask-center before:mask-no-repeat before:mask-cover;
+    @apply before:absolute before:top-1/2 before:left-1.5 before:size-4 before:-translate-y-1/2 before:animate-spin before:bg-current before:mask-[url('@assets/icons/loader-2.svg')] before:mask-cover before:mask-center before:mask-no-repeat;
 
     #view > &:first-child {
       @apply mx-auto grid min-h-48 w-fit place-items-center;

@@ -1,9 +1,13 @@
 @layer components {
   .cbi-section {
-    @apply mb-4 overflow-visible rounded-lg border border-panel-border bg-panel-bg p-4;
+    @apply border-panel-border bg-panel-bg mb-4 overflow-visible rounded-xl border p-4;
 
-    &[data-tab-title]         { @apply m-0 p-0; }
-    &[data-tab-active="true"] { @apply mb-4 p-4; }
+    &[data-tab-title] {
+      @apply m-0 p-0;
+    }
+    &[data-tab-active="true"] {
+      @apply mb-4 p-4;
+    }
 
     > .cbi-title {
       @apply flex items-start justify-between;
@@ -12,12 +16,12 @@
         @apply flex-1;
 
         .label[data-clickable] {
-          @apply inline-flex size-6 cursor-pointer items-center justify-center rounded bg-label-surface p-0 text-foreground hover:bg-muted active:scale-95;
+          @apply bg-label-surface text-foreground hover:bg-muted inline-flex size-6 cursor-pointer items-center justify-center rounded p-0 active:scale-95;
         }
 
         span[data-indicator="poll-status"] {
           @apply relative size-4 cursor-pointer text-[0px];
-          @apply before:absolute before:size-4 before:bg-current before:[mask-position:center] before:[mask-repeat:no-repeat] before:[mask-size:cover];
+          @apply before:absolute before:size-4 before:bg-current before:[mask-size:cover] before:[mask-position:center] before:[mask-repeat:no-repeat];
 
           &[data-style="active"] {
             @apply before:[mask-image:url('@assets/icons/chevron-down.svg')];
@@ -29,15 +33,19 @@
       }
     }
 
-    legend { @apply text-base font-semibold; }
+    legend {
+      @apply text-base font-semibold;
+    }
 
     h3 {
-      @apply mb-3 border-b border-border pb-3 text-base font-semibold text-foreground;
+      @apply border-border text-foreground mb-3 border-b pb-3 text-base font-semibold;
     }
 
     .cbi-section-create {
       @apply mt-4 flex flex-wrap items-center gap-2;
-      > div { @apply flex-none; }
+      > div {
+        @apply flex-none;
+      }
     }
 
     .network-status-table {
@@ -46,10 +54,10 @@
   }
 
   .ifacebox {
-    @apply relative inline-flex min-w-36 flex-col items-stretch overflow-visible rounded-lg border border-border bg-panel-bg text-center text-sm leading-5;
+    @apply border-border bg-panel-bg relative inline-flex min-w-36 flex-col items-stretch overflow-visible rounded-lg border text-center text-sm leading-5;
 
     .ifacebox-head {
-      @apply w-full rounded-t-lg border-b border-border bg-label-surface px-3 py-2 text-center text-sm font-semibold text-foreground transition-colors duration-200;
+      @apply border-border bg-label-surface text-foreground w-full rounded-t-lg border-b px-3 py-2 text-center text-sm font-semibold transition-colors duration-200;
 
       &[style*="--zone-color-rgb"] {
         @apply bg-[rgb(var(--zone-color-rgb),.75)]!;
@@ -57,38 +65,54 @@
 
       &.cbi-tooltip-container {
         @apply static bg-transparent;
-        .cbi-tooltip { @apply bottom-0 left-0; }
+        .cbi-tooltip {
+          @apply bottom-0 left-0;
+        }
       }
 
-      &.active { @apply border-primary bg-primary text-primary-foreground; }
+      &.active {
+        @apply border-primary bg-primary text-primary-foreground;
+      }
     }
 
     .ifacebox-body {
-      @apply flex w-full flex-1 flex-col items-center justify-around gap-2 rounded-b-lg p-3 text-center text-foreground;
+      @apply text-foreground flex w-full flex-1 flex-col items-center justify-around gap-2 rounded-b-lg p-3 text-center;
 
       > span {
         @apply space-y-1;
 
-        .cbi-tooltip { @apply delay-200; }
-        .nowrap { @apply inline-block; }
+        .cbi-tooltip {
+          @apply delay-200;
+        }
+        .nowrap {
+          @apply inline-block;
+        }
 
-        img { @apply w-5 shrink-0; }
+        img {
+          @apply w-5 shrink-0;
+        }
       }
 
       > div {
         @apply flex w-full flex-wrap space-y-2;
-        .ifacebadge { @apply flex-1; }
-      }
-
-      .cbi-tooltip-container {
-        @apply static inline-flex cursor-help items-center justify-center text-foreground;
-        .cbi-tooltip {
-          @apply bottom-0;
-          .nowrap { @apply whitespace-nowrap; }
+        .ifacebadge {
+          @apply flex-1;
         }
       }
 
-      small { @apply block text-xs leading-4; }
+      .cbi-tooltip-container {
+        @apply text-foreground static inline-flex cursor-help items-center justify-center;
+        .cbi-tooltip {
+          @apply bottom-0;
+          .nowrap {
+            @apply whitespace-nowrap;
+          }
+        }
+      }
+
+      small {
+        @apply block text-xs leading-4;
+      }
     }
   }
 }

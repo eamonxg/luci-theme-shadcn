@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2025 eamonxg <eamonxiong@gmail.com>
+ * Licensed under the Apache License, Version 2.0.
+ */
+
 // Editable input colors per mode. Everything else is derived in spec.js.
 // Linear palette: lavender brand oklch(0.567 0.158 275); product-level dark
 // canvas oklch(0.159 0.005 264); cool low-chroma grays (hue ~264-275).
@@ -15,8 +20,8 @@ export const DEFAULTS = {
     overlay_base: "oklch(0 0 0)",
   },
   dark: {
-    bg: "oklch(0.10 0.006 270)",
-    surface: "oklch(0.17 0.004 264)",
+    bg: "oklch(0.159 0.005 264)",
+    surface: "oklch(0.205 0.004 264)",
     text: "oklch(0.90 0.006 264)",
     brand: "oklch(0.567 0.158 275)",
     on_brand: "oklch(1 0 0)",

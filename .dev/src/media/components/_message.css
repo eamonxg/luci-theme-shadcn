@@ -1,8 +1,10 @@
 @layer components {
   .alert-message {
-    @apply mb-4 rounded-lg border bg-muted p-4 text-sm text-foreground;
+    @apply bg-muted text-foreground mb-4 rounded-lg border p-4 text-sm;
 
-    &.modal { @apply static; }
+    &.modal {
+      @apply static;
+    }
 
     &.success {
       @apply border-success-a30 bg-success-a10 text-success;
@@ -19,13 +21,24 @@
       @apply border-destructive-a30 bg-destructive-a10 text-destructive;
     }
 
-    h4, h5, pre, ul, li, p {
+    h4,
+    h5,
+    pre,
+    ul,
+    li,
+    p {
       @apply border-0 bg-transparent text-inherit;
     }
 
-    h4 { @apply mb-2 text-base font-semibold; }
-    p  { @apply text-sm leading-relaxed; }
+    h4 {
+      @apply mb-2 text-base font-semibold;
+    }
+    p {
+      @apply text-sm leading-relaxed;
+    }
 
-    .right { @apply mt-3; }
+    .right {
+      @apply mt-3;
+    }
   }
 }

@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2025 eamonxg <eamonxiong@gmail.com>
+ * Licensed under the Apache License, Version 2.0.
+ */
+
 // Operators: ['mix',a,b,p] ['shade',a,dl] ['set',a,L,C] ['alpha',a,p] ['const',str]
 // 'const','var:x' aliases token x. All values resolve to flat oklch() literals.
 const common = {
@@ -62,7 +67,7 @@ export const DERIVATIONS = {
     terminal_bg: ["const", "oklch(0.12 0.02 264)"],
     warning_soft_fg: ["const", "oklch(0.86 0.10 85)"],
     progress_bar_start: ["mix", "brand", "surface", 0.6],
-    login_left_bg: ["const", "oklch(0.10 0.02 264)"],
+    login_left_bg: ["shade", "bg", -0.025],
   },
 };
 

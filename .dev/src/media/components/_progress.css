@@ -1,10 +1,10 @@
 @layer components {
   .cbi-progressbar {
-    @apply relative h-2.5 w-full cursor-help overflow-hidden rounded-full bg-secondary;
-    @apply before:absolute before:inset-x-0 before:top-1/2 before:-translate-y-1/2 before:text-center before:text-[10px] before:leading-none before:text-foreground before:whitespace-nowrap before:content-[attr(title)];
+    @apply bg-secondary relative h-2.5 w-full cursor-help overflow-hidden rounded-full;
+    @apply before:text-foreground before:absolute before:inset-x-0 before:top-1/2 before:-translate-y-1/2 before:text-center before:text-[10px] before:leading-none before:whitespace-nowrap before:content-[attr(title)];
 
     > div {
-      @apply h-full bg-gradient-to-r from-progress-bar-start to-progress-bar-end transition-all duration-300;
+      @apply from-progress-bar-start to-progress-bar-end h-full bg-gradient-to-r transition-all duration-300;
     }
   }
 }

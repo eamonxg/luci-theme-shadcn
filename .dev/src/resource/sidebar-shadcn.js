@@ -45,7 +45,8 @@ return baseclass.extend({
     const btn = document.getElementById("theme-toggle-btn");
     if (!btn) return;
     btn.addEventListener("click", () => {
-      const isDark = document.documentElement.getAttribute("data-darkmode") === "true";
+      const isDark =
+        document.documentElement.getAttribute("data-darkmode") === "true";
       this.applyTheme(isDark ? "light" : "dark");
     });
     window
@@ -63,7 +64,9 @@ return baseclass.extend({
     const sidebar = document.getElementById("sidebar");
     if (!sidebar) return;
 
-    const bp = getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-md").trim();
+    const bp = getComputedStyle(document.documentElement)
+      .getPropertyValue("--breakpoint-md")
+      .trim();
     this._mobileQuery = window.matchMedia(`(width < ${bp})`);
     this._mobileQuery.addEventListener("change", (e) => {
       if (!e.matches) this._hideCollapsedPopover();
@@ -92,15 +95,20 @@ return baseclass.extend({
     if (!sidebar) return;
     const next = sidebar.getAttribute("data-collapsed") !== "true";
     sidebar.setAttribute("data-collapsed", next);
-    document.documentElement.setAttribute("data-sidebar-collapsed", next ? "true" : "false");
+    document.documentElement.setAttribute(
+      "data-sidebar-collapsed",
+      next ? "true" : "false",
+    );
     localStorage.setItem(SIDEBAR_KEY, next);
 
     this._hideCollapsedPopover();
 
     if (next) {
-      document.querySelectorAll(".sidebar-accordion-item[data-open='true']").forEach((item) => {
-        this._closeAccordionItem(item);
-      });
+      document
+        .querySelectorAll(".sidebar-accordion-item[data-open='true']")
+        .forEach((item) => {
+          this._closeAccordionItem(item);
+        });
     }
   },
 
@@ -139,7 +147,10 @@ return baseclass.extend({
           to.closest("#sidebar-collapsed-popover"));
 
       if (!isToRelevant) {
-        this._popoverTimer = setTimeout(() => this._hideCollapsedPopover(), 100);
+        this._popoverTimer = setTimeout(
+          () => this._hideCollapsedPopover(),
+          100,
+        );
       }
     });
   },
@@ -173,11 +184,14 @@ return baseclass.extend({
     ul.className = "sidebar-collapsed-popover-list";
 
     links.forEach((link) => {
-      const isActive = link.closest(".sidebar-sub-item")?.classList.contains("active");
+      const isActive = link
+        .closest(".sidebar-sub-item")
+        ?.classList.contains("active");
       const li = document.createElement("li");
       const a = document.createElement("a");
       a.href = link.href;
-      a.className = "sidebar-collapsed-popover-link" + (isActive ? " active" : "");
+      a.className =
+        "sidebar-collapsed-popover-link" + (isActive ? " active" : "");
       a.textContent = link.textContent;
       li.appendChild(a);
       ul.appendChild(li);
@@ -192,7 +206,10 @@ return baseclass.extend({
 
     popover.style.left = sidebarRect.right + 4 + "px";
 
-    const top = Math.min(itemRect.top, window.innerHeight - popover.offsetHeight - 8);
+    const top = Math.min(
+      itemRect.top,
+      window.innerHeight - popover.offsetHeight - 8,
+    );
     popover.style.top = Math.max(8, top) + "px";
   },
 
@@ -217,9 +234,11 @@ return baseclass.extend({
 
       const isOpen = item.getAttribute("data-open") === "true";
 
-      document.querySelectorAll(".sidebar-accordion-item[data-open='true']").forEach((other) => {
-        if (other !== item) this._closeAccordionItem(other);
-      });
+      document
+        .querySelectorAll(".sidebar-accordion-item[data-open='true']")
+        .forEach((other) => {
+          if (other !== item) this._closeAccordionItem(other);
+        });
 
       if (isOpen) {
         this._closeAccordionItem(item);

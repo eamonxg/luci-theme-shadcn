@@ -4,15 +4,22 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm clean && pnpm gen:tokens && vite build",
+    "build": "pnpm clean && pnpm gen:tokens && vite build && pnpm check:colors",
+    "check:colors": "node scripts/check-built-css.js",
     "gen:tokens": "node scripts/gen-tokens.js",
-    "clean": "node scripts/clean.js"
+    "clean": "node scripts/clean.js",
+    "format": "prettier --config prettier.config.mjs --ignore-path ../.prettierignore --write .. --ignore-unknown",
+    "format:check": "prettier --config prettier.config.mjs --ignore-path ../.prettierignore --check .. --ignore-unknown",
+    "lint-staged": "lint-staged --cwd ..",
+    "prepare": "cd .. && husky"
   },
   "devDependencies": {
     "@fontsource-variable/inter": "^5.2.8",
     "@tailwindcss/vite": "^4.3.0",
     "@types/node": "^25.9.1",
     "colorjs.io": "^0.6.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "tailwind-scrollbar": "^4.0.2",

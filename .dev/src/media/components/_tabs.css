@@ -1,45 +1,57 @@
 @layer components {
   /* shadcn Tabs (default) — LuCI tab sections */
   .cbi-tabmenu {
-    @apply mb-2 inline-flex min-h-9 w-fit max-w-full items-center justify-center gap-0 overflow-x-auto rounded-lg bg-muted p-[3px] text-muted-foreground;
+    @apply bg-muted text-muted-foreground mb-2 inline-flex min-h-9 w-fit max-w-full items-center justify-center gap-0 overflow-x-auto rounded-lg p-[3px];
 
     li {
       @apply relative m-0 min-w-fit shrink-0 list-none;
 
       &[data-errors] {
-        @apply after:absolute after:-right-1.5 after:-top-0.5 after:z-20 after:inline-flex after:min-h-4 after:min-w-4 after:items-center after:justify-center after:rounded-full after:bg-destructive after:px-1 after:py-0.5 after:text-xs after:font-semibold after:text-destructive-fg after:content-[attr(data-errors)];
+        @apply after:bg-destructive after:text-destructive-fg after:absolute after:-top-0.5 after:-right-1.5 after:z-20 after:inline-flex after:min-h-4 after:min-w-4 after:items-center after:justify-center after:rounded-full after:px-1 after:py-0.5 after:text-xs after:font-semibold after:content-[attr(data-errors)];
 
-        > a { @apply border border-destructive-a50; }
+        > a {
+          @apply border-destructive-a50 border;
+        }
       }
 
       > a {
-        @apply inline-flex items-center justify-center rounded-md border border-transparent px-3 py-1 text-sm font-medium whitespace-nowrap text-muted-foreground no-underline transition-all hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring-a50;
+        @apply text-muted-foreground hover:text-foreground focus-visible:ring-ring-a50 inline-flex items-center justify-center rounded-md border border-transparent px-3 py-1 text-sm font-medium whitespace-nowrap no-underline transition-all focus-visible:ring-[3px] focus-visible:outline-none;
       }
 
       &.cbi-tab > a {
-        @apply bg-background text-foreground shadow-sm dark:border dark:border-input dark:bg-input-a30;
+        @apply bg-background text-foreground dark:border-input dark:bg-input-a30 shadow-sm dark:border;
       }
     }
   }
 
-  [data-tab-title]         { @apply invisible h-0 overflow-hidden; }
-  [data-tab-active="true"] { @apply visible h-auto overflow-visible; }
+  [data-tab-title] {
+    @apply invisible h-0 overflow-hidden;
+  }
+  [data-tab-active="true"] {
+    @apply visible h-auto overflow-visible;
+  }
 
   /* Underline tab bar — used by #tabmenu pages */
-  #tabmenu { @apply mb-6 w-full; }
+  #tabmenu {
+    @apply mb-6 w-full;
+  }
 
   .tabs {
-    @apply relative flex items-center gap-0 overflow-x-auto border-b border-border;
+    @apply border-border relative flex items-center gap-0 overflow-x-auto border-b;
 
     a {
-      @apply block px-6 py-3 text-center text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors duration-200 hover:text-foreground hover:no-underline;
+      @apply text-muted-foreground hover:text-foreground block px-6 py-3 text-center text-sm font-medium whitespace-nowrap transition-colors duration-200 hover:no-underline;
     }
 
     > li.active {
-      @apply border-b-2 border-foreground;
-      > a { @apply font-semibold text-foreground; }
+      @apply border-foreground border-b-2;
+      > a {
+        @apply text-foreground font-semibold;
+      }
     }
   }
 
-  .cbi-section-node-tabbed { @apply mt-4; }
+  .cbi-section-node-tabbed {
+    @apply mt-4;
+  }
 }

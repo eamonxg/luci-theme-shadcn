@@ -7,56 +7,74 @@
   .cbi-value {
     @apply flex flex-row flex-wrap gap-4 py-1.5;
 
-    &.hidden { @apply hidden; }
+    &.hidden {
+      @apply hidden;
+    }
 
-    & + & { @apply mt-3; }
+    & + & {
+      @apply mt-3;
+    }
 
     > .cbi-value-title {
-      @apply pt-1 text-right text-sm font-medium text-foreground md:flex-[0_0_10rem];
+      @apply text-foreground pt-1 text-right text-sm font-medium md:flex-[0_0_10rem];
     }
 
     > .cbi-value-field {
       @apply max-w-full flex-1;
 
-      &:has(> .cbi-dropdown[disabled]) { @apply cursor-not-allowed; }
+      &:has(> .cbi-dropdown[disabled]) {
+        @apply cursor-not-allowed;
+      }
 
       .cbi-value-description {
-        @apply relative mt-1 pl-5 text-sm leading-none text-muted-foreground break-words;
+        @apply text-muted-foreground relative mt-1 pl-5 text-sm leading-none break-words;
 
         &:not(:empty) {
-          @apply before:absolute before:left-0 before:inline-block before:size-4 before:bg-primary before:[mask-image:url('@assets/icons/info.svg')] before:[mask-position:center] before:[mask-repeat:no-repeat] before:[mask-size:cover];
+          @apply before:bg-primary before:absolute before:left-0 before:inline-block before:size-4 before:[mask-image:url('@assets/icons/info.svg')] before:[mask-size:cover] before:[mask-position:center] before:[mask-repeat:no-repeat];
         }
       }
     }
 
     > .cbi-section,
-    > .cbi-tblsection { @apply w-full; }
+    > .cbi-tblsection {
+      @apply w-full;
+    }
   }
 
   .cbi-dynlist {
     @apply inline-flex w-max max-w-96 flex-col items-start gap-3;
 
     .item {
-      @apply pointer-events-auto relative inline-flex cursor-move flex-col items-start gap-2 self-stretch overflow-hidden rounded-lg border border-border bg-panel-bg py-3 pr-9 pl-4 shadow-sm transition-all duration-200 select-text break-all;
+      @apply border-border bg-panel-bg pointer-events-auto relative inline-flex cursor-move flex-col items-start gap-2 self-stretch overflow-hidden rounded-lg border py-3 pr-9 pl-4 break-all shadow-sm transition-all duration-200 select-text;
 
       &::after {
-        content: '×';
-        @apply absolute top-2 right-2 inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded bg-muted text-sm font-medium text-muted-foreground;
+        content: "×";
+        @apply bg-muted text-muted-foreground absolute top-2 right-2 inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-sm font-medium;
       }
 
-      &.dragging  { @apply scale-95 cursor-grabbing opacity-50 shadow-lg; }
-      &.drag-over { @apply scale-105 border-primary-a60 bg-primary-a5 ring-2 ring-ring; }
+      &.dragging {
+        @apply scale-95 cursor-grabbing opacity-50 shadow-lg;
+      }
+      &.drag-over {
+        @apply border-primary-a60 bg-primary-a5 ring-ring scale-105 ring-2;
+      }
 
       > span,
-      > code { @apply pointer-events-none w-full rounded font-mono leading-relaxed; }
+      > code {
+        @apply pointer-events-none w-full rounded font-mono leading-relaxed;
+      }
     }
 
-    .placeholder { @apply break-all; }
+    .placeholder {
+      @apply break-all;
+    }
 
     .add-item {
-      @apply inline-flex items-center gap-1.5 self-stretch rounded-lg border border-dashed border-border bg-transparent px-1 py-1 transition-colors duration-200 hover:border-border-a80 hover:bg-muted-a30;
+      @apply border-border hover:border-border-a80 hover:bg-muted-a30 inline-flex items-center gap-1.5 self-stretch rounded-lg border border-dashed bg-transparent px-1 py-1 transition-colors duration-200;
 
-      > input { @apply min-w-56 flex-1; }
+      > input {
+        @apply min-w-56 flex-1;
+      }
 
       > .cbi-button {
         @apply inline-flex min-h-6 min-w-6 shrink-0 cursor-pointer items-center justify-center rounded px-2 py-0 text-sm font-medium shadow-none active:scale-95;
@@ -68,9 +86,13 @@
     .cbi-value {
       @apply flex-col gap-1.5 py-1;
 
-      > .cbi-value-title { @apply text-left; }
+      > .cbi-value-title {
+        @apply text-left;
+      }
     }
 
-    .cbi-dynlist { @apply max-w-full; }
+    .cbi-dynlist {
+      @apply max-w-full;
+    }
   }
 }

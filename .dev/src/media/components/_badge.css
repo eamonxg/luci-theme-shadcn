@@ -1,15 +1,23 @@
 @layer components {
   .label {
-    @apply inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground;
+    @apply bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
 
-    &.important { @apply bg-info-a15 text-info; }
-    &.warning   { @apply bg-warning-a15 text-warning-soft-fg; }
-    &.success   { @apply bg-success-a15 text-success; }
-    &.notice    { @apply bg-warning-a15 text-warning-soft-fg; }
+    &.important {
+      @apply bg-info-a15 text-info;
+    }
+    &.warning {
+      @apply bg-warning-a15 text-warning-soft-fg;
+    }
+    &.success {
+      @apply bg-success-a15 text-success;
+    }
+    &.notice {
+      @apply bg-warning-a15 text-warning-soft-fg;
+    }
   }
 
   .zonebadge {
-    @apply inline-flex items-center gap-1 overflow-visible rounded-full border border-secondary bg-secondary px-1 py-1 text-sm font-medium text-secondary-foreground transition-colors duration-200;
+    @apply border-secondary bg-secondary text-secondary-foreground inline-flex items-center gap-1 overflow-visible rounded-full border px-1 py-1 text-sm font-medium transition-colors duration-200;
 
     &[style*="--zone-color-rgb"] {
       @apply bg-[rgb(var(--zone-color-rgb),.7)]!;
@@ -21,7 +29,7 @@
   }
 
   .ifacebadge {
-    @apply inline-flex cursor-default flex-wrap items-center gap-1.5 rounded-lg border border-border bg-label-surface px-2.5 py-1.5 text-sm font-normal text-foreground transition-colors duration-200;
+    @apply border-border bg-label-surface text-foreground inline-flex cursor-default flex-wrap items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-sm font-normal transition-colors duration-200;
 
     .cbi-dropdown &,
     .cbi-tooltip & {
@@ -31,17 +39,27 @@
     .zonebadge > &,
     .cbi-dropdown & {
       @apply rounded-md px-1.5 py-0;
-      img { @apply mr-1 w-4; }
+      img {
+        @apply mr-1 w-4;
+      }
     }
 
-    > img { @apply w-5 shrink-0 self-center; }
+    > img {
+      @apply w-5 shrink-0 self-center;
+    }
 
     > span {
-      .nowrap { @apply mb-1.5 inline-block text-sm; }
+      .nowrap {
+        @apply mb-1.5 inline-block text-sm;
+      }
     }
 
-    &.ifacebadge-active { @apply border-primary font-semibold; }
+    &.ifacebadge-active {
+      @apply border-primary font-semibold;
+    }
 
-    &.large { @apply min-w-48 flex-1 px-4 py-3; }
+    &.large {
+      @apply min-w-48 flex-1 px-4 py-3;
+    }
   }
 }

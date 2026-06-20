@@ -1,76 +1,121 @@
 @layer components {
   table.table,
   .table {
-    @apply mb-4 w-full border-separate border-spacing-0 overflow-visible rounded-lg border border-border;
+    @apply border-border mb-4 w-full border-separate border-spacing-0 overflow-visible rounded-lg border;
 
-    &[width="100%"] { @apply w-full; }
-    &[width="33%"]  { @apply w-1/3; }
+    &[width="100%"] {
+      @apply w-full;
+    }
+    &[width="33%"] {
+      @apply w-1/3;
+    }
 
-    .cbi-section-table-titles { @apply font-semibold; }
+    .cbi-section-table-titles {
+      @apply font-semibold;
+    }
 
     .cbi-section-table-titles.named,
     .cbi-section-table-descr.named,
     .cbi-section-table-row[data-title] {
-      @apply before:table-cell before:border-b before:border-border before:px-3 before:py-2.5 before:align-middle before:text-sm before:font-semibold before:content-[attr(data-title)];
+      @apply before:border-border before:table-cell before:border-b before:px-3 before:py-2.5 before:align-middle before:text-sm before:font-semibold before:content-[attr(data-title)];
       &:not([data-title]),
-      &:has(td.cbi-section-table-titles) { @apply before:content-none; }
+      &:has(td.cbi-section-table-titles) {
+        @apply before:content-none;
+      }
     }
 
     .cbi-section-table-titles.named {
-      @apply before:rounded-tl-lg before:bg-label-surface;
+      @apply before:bg-label-surface before:rounded-tl-lg;
     }
 
-    tr, .tr {
-      @apply transition-colors duration-200 hover:bg-label-surface;
+    tr,
+    .tr {
+      @apply hover:bg-label-surface transition-colors duration-200;
 
       &:first-child {
         &:not([data-title]) {
-          .th, .td { @apply first:rounded-tl-lg; }
+          .th,
+          .td {
+            @apply first:rounded-tl-lg;
+          }
         }
-        .th, .td { @apply last:rounded-tr-lg; }
+        .th,
+        .td {
+          @apply last:rounded-tr-lg;
+        }
       }
 
       &:last-child {
-        &[data-title] { @apply before:rounded-bl-lg before:border-b-0; }
-        .td { @apply border-b-0 first:rounded-bl-lg last:rounded-br-lg; }
+        &[data-title] {
+          @apply before:rounded-bl-lg before:border-b-0;
+        }
+        .td {
+          @apply border-b-0 first:rounded-bl-lg last:rounded-br-lg;
+        }
       }
 
       &.table-titles,
       &.cbi-section-table-titles,
-      &.cbi-section-table-descr { @apply hidden; }
+      &.cbi-section-table-descr {
+        @apply hidden;
+      }
 
-      &.cbi-rowstyle-1 { @apply bg-panel-bg; }
-      &.cbi-rowstyle-2 { @apply bg-label-surface-a50; }
-    }
-
-    th, .th {
-      @apply border-b border-border bg-label-surface px-3 py-2.5 text-left text-sm font-medium backdrop-blur-sm;
-
-      &[width="100%"] { @apply w-full; }
-      &[width="33%"]  { @apply w-1/3; }
-
-      &[data-sortable-row="true"] {
-        @apply cursor-pointer select-none hover:bg-label-surface after:ml-0.5 after:text-xs;
-        &[data-sort-direction="asc"]  { @apply after:content-['▲']; }
-        &[data-sort-direction="desc"] { @apply after:content-['▼']; }
+      &.cbi-rowstyle-1 {
+        @apply bg-panel-bg;
+      }
+      &.cbi-rowstyle-2 {
+        @apply bg-label-surface-a50;
       }
     }
 
-    td, .td {
-      @apply table-cell border-b border-border px-3 py-2.5 align-middle text-sm whitespace-normal break-words;
+    th,
+    .th {
+      @apply border-border bg-label-surface border-b px-3 py-2.5 text-left text-sm font-medium backdrop-blur-sm;
+
+      &[width="100%"] {
+        @apply w-full;
+      }
+      &[width="33%"] {
+        @apply w-1/3;
+      }
+
+      &[data-sortable-row="true"] {
+        @apply hover:bg-label-surface cursor-pointer select-none after:ml-0.5 after:text-xs;
+        &[data-sort-direction="asc"] {
+          @apply after:content-['▲'];
+        }
+        &[data-sort-direction="desc"] {
+          @apply after:content-['▼'];
+        }
+      }
+    }
+
+    td,
+    .td {
+      @apply border-border table-cell border-b px-3 py-2.5 align-middle text-sm break-words whitespace-normal;
       @apply before:hidden before:content-[attr(data-title)];
 
       > input[type="text"],
       > input[type="password"],
       > select,
-      > .cbi-dropdown:not(.btn):not(.cbi-button) { @apply w-full; }
+      > .cbi-dropdown:not(.btn):not(.cbi-button) {
+        @apply w-full;
+      }
 
-      &.cbi-value-field { @apply break-all; }
+      &.cbi-value-field {
+        @apply break-all;
+      }
 
-      &.cbi-section-actions > div > .cbi-button { @apply flex-1; }
+      &.cbi-section-actions > div > .cbi-button {
+        @apply flex-1;
+      }
 
-      &[width="100%"] { @apply w-full; }
-      &[width="33%"]  { @apply w-1/3; }
+      &[width="100%"] {
+        @apply w-full;
+      }
+      &[width="33%"] {
+        @apply w-1/3;
+      }
     }
   }
 
@@ -80,29 +125,55 @@
     .table {
       @apply block w-full overflow-visible rounded-none border-0 shadow-none;
 
-      tbody, .tbody { @apply block; }
-
-      tr, .tr {
-        @apply flex flex-wrap border-b border-border px-2 py-2;
-        &.table-titles,
-        &.cbi-section-table-titles,
-        &.cbi-section-table-descr { @apply hidden; }
-        &:first-child:not(.table-titles, .cbi-section-table-titles, .cbi-section-table-descr),
-        &.table-titles + .tr,
-        &.cbi-section-table-titles + .tr { @apply rounded-t-lg; }
-        &:last-child { @apply rounded-b-lg; }
+      tbody,
+      .tbody {
+        @apply block;
       }
 
-      th, .th { @apply hidden; }
+      tr,
+      .tr {
+        @apply border-border flex flex-wrap border-b px-2 py-2;
+        &.table-titles,
+        &.cbi-section-table-titles,
+        &.cbi-section-table-descr {
+          @apply hidden;
+        }
+        &:first-child:not(
+            .table-titles,
+            .cbi-section-table-titles,
+            .cbi-section-table-descr
+          ),
+        &.table-titles + .tr,
+        &.cbi-section-table-titles + .tr {
+          @apply rounded-t-lg;
+        }
+        &:last-child {
+          @apply rounded-b-lg;
+        }
+      }
 
-      td, .td {
+      th,
+      .th {
+        @apply hidden;
+      }
+
+      td,
+      .td {
         @apply flex-[1_1_50%] border-0 px-1 py-1 text-sm;
         @apply before:mb-1 before:block before:text-xs before:font-semibold;
 
-        &.cbi-section-actions { @apply flex-[0_0_100%]; }
-        > .cbi-button         { @apply w-full; }
-        &[width="100%"]       { @apply flex-[0_0_100%]; }
-        &[width="33%"]        { @apply flex-[0_0_33.333%]; }
+        &.cbi-section-actions {
+          @apply flex-[0_0_100%];
+        }
+        > .cbi-button {
+          @apply w-full;
+        }
+        &[width="100%"] {
+          @apply flex-[0_0_100%];
+        }
+        &[width="33%"] {
+          @apply flex-[0_0_33.333%];
+        }
       }
     }
   }

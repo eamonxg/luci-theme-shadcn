@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2025 eamonxg <eamonxiong@gmail.com>
+ * Licensed under the Apache License, Version 2.0.
+ */
+
 import { DERIVATIONS } from "./spec.js";
 import { DEFAULTS } from "./defaults.js";
 import { mix, shade, set, alpha, konst, toOklch } from "./engine.js";
@@ -47,5 +52,4 @@ export function resolveTokens(mode, inputs) {
   return resolved;
 }
 
-export const resolveMode = (mode) =>
-  resolveTokens(mode, { ...DEFAULTS[mode] });
+export const resolveMode = (mode) => resolveTokens(mode, { ...DEFAULTS[mode] });

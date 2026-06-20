@@ -9,7 +9,7 @@
   input[type="email"],
   .cbi-input-text,
   .cbi-input {
-    @apply relative rounded-lg border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground-a70 shadow-none transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-ring focus:outline-none;
+    @apply border-input bg-background text-foreground placeholder:text-muted-foreground-a70 focus:border-primary focus:ring-ring relative rounded-lg border px-3 py-1.5 text-sm shadow-none transition-colors duration-200 focus:ring-2 focus:outline-none;
 
     .table.cbi-section-table & {
       @apply w-full;
@@ -25,7 +25,7 @@
   }
 
   textarea {
-    @apply min-h-24 w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground-a70 transition-colors duration-200 focus:border-primary focus:ring-2 focus:ring-ring focus:outline-none;
+    @apply border-input bg-background text-foreground placeholder:text-muted-foreground-a70 focus:border-primary focus:ring-ring min-h-24 w-full resize-y rounded-lg border px-3 py-2 text-sm transition-colors duration-200 focus:ring-2 focus:outline-none;
 
     &[disabled] {
       @apply cursor-not-allowed opacity-40;
@@ -35,10 +35,10 @@
   input[type="radio"],
   input[type="checkbox"] {
     @apply relative mr-3 inline-block h-4 w-4 cursor-pointer appearance-none disabled:cursor-not-allowed;
-    @apply before:absolute before:inset-0 before:rounded before:border before:border-input before:bg-background before:transition-colors before:duration-200;
-    @apply after:absolute after:inset-0 after:bg-primary-foreground after:opacity-0 after:[mask-position:center] after:[mask-repeat:no-repeat] after:[mask-size:cover] after:transition-opacity after:duration-200;
+    @apply before:border-input before:bg-background before:absolute before:inset-0 before:rounded before:border before:transition-colors before:duration-200;
+    @apply after:bg-primary-foreground after:absolute after:inset-0 after:[mask-size:cover] after:[mask-position:center] after:[mask-repeat:no-repeat] after:opacity-0 after:transition-opacity after:duration-200;
     @apply checked:before:border-primary checked:before:bg-primary checked:after:opacity-100;
-    @apply focus:before:ring-2 focus:before:ring-ring focus:before:outline-none;
+    @apply focus:before:ring-ring focus:before:ring-2 focus:before:outline-none;
   }
 
   input[type="radio"] {

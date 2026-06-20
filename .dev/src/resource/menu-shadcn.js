@@ -56,7 +56,9 @@ return baseclass.extend({
 
   /** luci-base menu `admin/logout` — render in sidebar footer, not main nav */
   _isLogoutMenuItem(section) {
-    const n = String(section && section.name != null ? section.name : "").toLowerCase();
+    const n = String(
+      section && section.name != null ? section.name : "",
+    ).toLowerCase();
     return n === "logout" || n.endsWith("/logout");
   },
 
@@ -134,8 +136,12 @@ return baseclass.extend({
             "aria-label": _("Toggle sidebar"),
           },
           [
-            E("span", { class: "icon-collapse" }, [this._iconFile("panel-left-close", 16)]),
-            E("span", { class: "icon-expand" }, [this._iconFile("panel-left-open", 16)]),
+            E("span", { class: "icon-collapse" }, [
+              this._iconFile("panel-left-close", 16),
+            ]),
+            E("span", { class: "icon-expand" }, [
+              this._iconFile("panel-left-open", 16),
+            ]),
           ],
         ),
       ]),
@@ -143,7 +149,9 @@ return baseclass.extend({
 
     sidebar.appendChild(E("nav", { class: "sidebar-nav", id: "sidebar-nav" }));
 
-    sidebar.appendChild(E("div", { class: "sidebar-footer", id: "sidebar-footer", hidden: "" }));
+    sidebar.appendChild(
+      E("div", { class: "sidebar-footer", id: "sidebar-footer", hidden: "" }),
+    );
 
     sidebar.style.removeProperty("display");
   },
@@ -198,19 +206,25 @@ return baseclass.extend({
         const isActive = dp[1] == section.name;
         const iconEl = this._sectionIcon(section.name, 18);
         foot.appendChild(
-          E("a", {
-            class: "sidebar-logout" + (isActive ? " active" : ""),
-            href: L.url(branchUrl, section.name),
-            "aria-label": _(section.title),
-            onclick: () => {
-              if (window.ShadcnSidebar && window.ShadcnSidebar.closeDrawer) {
-                window.ShadcnSidebar.closeDrawer();
-              }
+          E(
+            "a",
+            {
+              class: "sidebar-logout" + (isActive ? " active" : ""),
+              href: L.url(branchUrl, section.name),
+              "aria-label": _(section.title),
+              onclick: () => {
+                if (window.ShadcnSidebar && window.ShadcnSidebar.closeDrawer) {
+                  window.ShadcnSidebar.closeDrawer();
+                }
+              },
             },
-          }, [
-            E("span", { class: "sidebar-icon", "aria-hidden": "true" }, [iconEl]),
-            E("span", { class: "sidebar-label" }, [_(section.title)]),
-          ]),
+            [
+              E("span", { class: "sidebar-icon", "aria-hidden": "true" }, [
+                iconEl,
+              ]),
+              E("span", { class: "sidebar-label" }, [_(section.title)]),
+            ],
+          ),
         );
         foot.hidden = false;
         return;
@@ -222,24 +236,33 @@ return baseclass.extend({
 
       if (subs.length === 0) {
         nav.appendChild(
-          E("div", { class: "sidebar-nav-item" + (isActive ? " active" : "") }, [
-            E(
-              "a",
-              {
-                class: "sidebar-nav-parent no-sub",
-                href: L.url(branchUrl, section.name),
-                onclick: () => {
-                  if (window.ShadcnSidebar && window.ShadcnSidebar.closeDrawer) {
-                    window.ShadcnSidebar.closeDrawer();
-                  }
+          E(
+            "div",
+            { class: "sidebar-nav-item" + (isActive ? " active" : "") },
+            [
+              E(
+                "a",
+                {
+                  class: "sidebar-nav-parent no-sub",
+                  href: L.url(branchUrl, section.name),
+                  onclick: () => {
+                    if (
+                      window.ShadcnSidebar &&
+                      window.ShadcnSidebar.closeDrawer
+                    ) {
+                      window.ShadcnSidebar.closeDrawer();
+                    }
+                  },
                 },
-              },
-              [
-                E("span", { class: "sidebar-icon", "aria-hidden": "true" }, [iconEl]),
-                E("span", { class: "sidebar-label" }, [_(section.title)]),
-              ],
-            ),
-          ]),
+                [
+                  E("span", { class: "sidebar-icon", "aria-hidden": "true" }, [
+                    iconEl,
+                  ]),
+                  E("span", { class: "sidebar-label" }, [_(section.title)]),
+                ],
+              ),
+            ],
+          ),
         );
         return;
       }
@@ -253,7 +276,9 @@ return baseclass.extend({
         },
         [
           E("button", { class: "sidebar-nav-parent", type: "button" }, [
-            E("span", { class: "sidebar-icon", "aria-hidden": "true" }, [iconEl]),
+            E("span", { class: "sidebar-icon", "aria-hidden": "true" }, [
+              iconEl,
+            ]),
             E("span", { class: "sidebar-label" }, [_(section.title)]),
             E("span", { class: "sidebar-chevron", "aria-hidden": "true" }, [
               this._iconFile("chevron-down", 18),
@@ -265,21 +290,30 @@ return baseclass.extend({
               { class: "sidebar-sub-list" },
               subs.map((page) => {
                 const isPageActive = isActive && dp[2] == page.name;
-                return E("li", { class: "sidebar-sub-item" + (isPageActive ? " active" : "") }, [
-                  E(
-                    "a",
-                    {
-                      class: "sidebar-sub-link",
-                      href: L.url(branchUrl, section.name, page.name),
-                      onclick: () => {
-                        if (window.ShadcnSidebar && window.ShadcnSidebar.closeDrawer) {
-                          window.ShadcnSidebar.closeDrawer();
-                        }
+                return E(
+                  "li",
+                  {
+                    class: "sidebar-sub-item" + (isPageActive ? " active" : ""),
+                  },
+                  [
+                    E(
+                      "a",
+                      {
+                        class: "sidebar-sub-link",
+                        href: L.url(branchUrl, section.name, page.name),
+                        onclick: () => {
+                          if (
+                            window.ShadcnSidebar &&
+                            window.ShadcnSidebar.closeDrawer
+                          ) {
+                            window.ShadcnSidebar.closeDrawer();
+                          }
+                        },
                       },
-                    },
-                    [_(page.title)],
-                  ),
-                ]);
+                      [_(page.title)],
+                    ),
+                  ],
+                );
               }),
             ),
           ]),
@@ -303,16 +337,24 @@ return baseclass.extend({
     const ch = branch.children || {};
     const sectionNode = ch[activeSection];
     const pageNode =
-      sectionNode && sectionNode.children ? sectionNode.children[activePage] : null;
+      sectionNode && sectionNode.children
+        ? sectionNode.children[activePage]
+        : null;
 
     if (sectionNode) {
-      crumb.appendChild(E("span", { class: "breadcrumb-item" }, [_(sectionNode.title)]));
+      crumb.appendChild(
+        E("span", { class: "breadcrumb-item" }, [_(sectionNode.title)]),
+      );
     }
     if (pageNode) {
       crumb.appendChild(
-        E("span", { class: "breadcrumb-sep" }, [this._iconFile("chevron-right", 14)]),
+        E("span", { class: "breadcrumb-sep" }, [
+          this._iconFile("chevron-right", 14),
+        ]),
       );
-      crumb.appendChild(E("span", { class: "breadcrumb-item active" }, [_(pageNode.title)]));
+      crumb.appendChild(
+        E("span", { class: "breadcrumb-item active" }, [_(pageNode.title)]),
+      );
     }
   },
 

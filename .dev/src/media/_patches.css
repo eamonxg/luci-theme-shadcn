@@ -14,16 +14,22 @@
 #file-manager-container {
   @apply overflow-auto;
 
-  #status-bar { @apply border-0 bg-background; }
+  #status-bar {
+    @apply bg-background border-0;
+  }
 }
 
 /* luci-app-openclash */
 [data-page="admin-services-openclash-config"] {
-  .sub_div img { @apply h-5 w-5; }
+  .sub_div img {
+    @apply h-5 w-5;
+  }
 }
 
 [data-page="admin-services-openclash-settings"] {
-  .cbi-value-field .cbi-input-select { @apply w-full; }
+  .cbi-value-field .cbi-input-select {
+    @apply w-full;
+  }
 }
 
 /* luci-app-statistics */
@@ -35,14 +41,22 @@
 .Dashboard {
   > .section-content {
     .dashboard-bg {
-      &.tr { @apply rounded-none; }
+      &.tr {
+        @apply rounded-none;
+      }
       @apply bg-panel-bg;
-      &:not(.tr) { @apply border border-panel-border shadow-sm; }
+      &:not(.tr) {
+        @apply border-panel-border border shadow-sm;
+      }
     }
 
     .title {
-      img[src*=".svg"] { @apply dark:invert; }
-      h3 { @apply border-0 pb-3 text-foreground; }
+      img[src*=".svg"] {
+        @apply dark:invert;
+      }
+      h3 {
+        @apply text-foreground border-0 pb-3;
+      }
     }
   }
 }

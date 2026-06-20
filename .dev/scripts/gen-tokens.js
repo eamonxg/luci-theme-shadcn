@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2025 eamonxg <eamonxiong@gmail.com>
+ * Licensed under the Apache License, Version 2.0.
+ */
+
 import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import Color from "colorjs.io";
@@ -26,7 +31,8 @@ function alphaTokens(resolved) {
 function block(selector, ...maps) {
   const lines = [];
   for (const m of maps)
-    for (const [k, v] of Object.entries(m)) lines.push(`  --${kebab(k)}: ${v};`);
+    for (const [k, v] of Object.entries(m))
+      lines.push(`  --${kebab(k)}: ${v};`);
   return `${selector} {\n${lines.join("\n")}\n`;
 }
 
