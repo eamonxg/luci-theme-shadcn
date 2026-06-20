@@ -52,7 +52,7 @@ export const DERIVATIONS = {
     muted: ["shade", "bg", 0.03],
     secondary: ["shade", "surface", 0.02],
     label_surface: ["shade", "surface", -0.01],
-    border: ["mix", "text", "bg", 0.105],
+    border: ["mix", "text", "bg", 0.14],
     panel_border: ["alpha", "text", 0.08],
     primary_hover: ["shade", "brand", 0.06],
     sidebar_accent: ["shade", "surface", 0.025],

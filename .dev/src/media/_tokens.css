@@ -106,8 +106,8 @@
 }
 
 [data-darkmode="true"] {
-  --bg: oklch(0.159 0.005 264);
-  --surface: oklch(0.205 0.004 264);
+  --bg: oklch(0.10 0.006 270);
+  --surface: oklch(0.17 0.004 264);
   --text: oklch(0.978 0.002 264);
   --brand: oklch(0.567 0.158 275);
   --on-brand: oklch(1 0 0);
@@ -116,20 +116,20 @@
   --danger: oklch(0.63 0.16 25);
   --info: oklch(0.70 0.10 250);
   --overlay-base: oklch(0 0 0);
-  --background: oklch(0.159 0.005 264);
+  --background: oklch(0.10 0.006 270);
   --foreground: oklch(0.978 0.002 264);
   --primary: oklch(0.567 0.158 275);
   --primary-foreground: oklch(1 0 0);
-  --panel-bg: oklch(0.205 0.004 264);
+  --panel-bg: oklch(0.17 0.004 264);
   --destructive: oklch(0.63 0.16 25);
   --ring: oklch(0.567 0.158 275);
-  --border: oklch(24.5% 0.0047 264);
-  --input: oklch(24.5% 0.0047 264);
-  --sidebar-bg: oklch(0.159 0.005 264);
+  --border: oklch(22.29% 0.0054 269.7);
+  --input: oklch(22.29% 0.0054 269.7);
+  --sidebar-bg: oklch(0.10 0.006 270);
   --sidebar-foreground: oklch(0.978 0.002 264);
   --sidebar-accent-fg: oklch(0.978 0.002 264);
-  --sidebar-accent: oklch(23% 0.004 264);
-  --sidebar-hover-bg: oklch(23% 0.004 264);
+  --sidebar-accent: oklch(19.5% 0.004 264);
+  --sidebar-hover-bg: oklch(19.5% 0.004 264);
   --login-path-stroke: oklch(0.567 0.158 275);
   --progress-bar-end: oklch(0.567 0.158 275);
   --destructive-fg: oklch(100% 0 0);
@@ -137,13 +137,13 @@
   --info-fg: oklch(100% 0 0);
   --warning-fg: oklch(20% 0.05 75);
   --terminal-foreground: oklch(85% 0.08 155);
-  --muted-foreground: oklch(56.85% 0.0035 264);
-  --secondary-foreground: oklch(85.52% 0.0025 264);
-  --sidebar-muted: oklch(55.21% 0.0036 264);
+  --muted-foreground: oklch(53.9% 0.004 268.5);
+  --secondary-foreground: oklch(84.63% 0.0026 266.1);
+  --sidebar-muted: oklch(52.14% 0.0041 268.6);
   --focus-ring: oklch(56.7% 0.158 275 / 0.5);
-  --muted: oklch(18.9% 0.005 264);
-  --secondary: oklch(22.5% 0.004 264);
-  --label-surface: oklch(19.5% 0.004 264);
+  --muted: oklch(13% 0.006 270);
+  --secondary: oklch(19% 0.004 264);
+  --label-surface: oklch(16% 0.004 264);
   --panel-border: oklch(97.8% 0.002 264 / 0.08);
   --primary-hover: oklch(62.7% 0.158 275);
   --sidebar-active-bg: oklch(56.7% 0.158 275 / 0.14);
@@ -151,7 +151,7 @@
   --sidebar-border: oklch(97.8% 0.002 264 / 0.08);
   --terminal-bg: oklch(12% 0.02 264);
   --warning-soft-fg: oklch(86% 0.1 85);
-  --progress-bar-start: oklch(42.22% 0.0964 274.8);
+  --progress-bar-start: oklch(40.82% 0.0964 274.8);
   --login-left-bg: oklch(10% 0.02 264);
   --primary-a5: oklch(56.7% 0.158 275 / 0.05);
   --primary-a10: oklch(56.7% 0.158 275 / 0.1);
@@ -173,10 +173,10 @@
   --destructive-a90: oklch(63% 0.16 25 / 0.9);
   --foreground-a5: oklch(97.8% 0.002 264 / 0.05);
   --foreground-a30: oklch(97.8% 0.002 264 / 0.3);
-  --secondary-a80: oklch(22.5% 0.004 264 / 0.8);
-  --muted-a30: oklch(18.9% 0.005 264 / 0.3);
-  --muted-a80: oklch(18.9% 0.005 264 / 0.8);
-  --muted-foreground-a70: oklch(56.85% 0.0035 264 / 0.7);
+  --secondary-a80: oklch(19% 0.004 264 / 0.8);
+  --muted-a30: oklch(13% 0.006 270 / 0.3);
+  --muted-a80: oklch(13% 0.006 270 / 0.8);
+  --muted-foreground-a70: oklch(53.9% 0.004 268.5 / 0.7);
   --success-a10: oklch(63.7% 0.175 147 / 0.1);
   --success-a15: oklch(63.7% 0.175 147 / 0.15);
   --success-a30: oklch(63.7% 0.175 147 / 0.3);
@@ -191,13 +191,13 @@
   --info-a30: oklch(70% 0.1 250 / 0.3);
   --info-a40: oklch(70% 0.1 250 / 0.4);
   --info-a80: oklch(70% 0.1 250 / 0.8);
-  --border-a60: oklch(24.5% 0.0047 264 / 0.6);
-  --border-a80: oklch(24.5% 0.0047 264 / 0.8);
-  --input-a30: oklch(24.5% 0.0047 264 / 0.3);
-  --label-surface-a50: oklch(19.5% 0.004 264 / 0.5);
+  --border-a60: oklch(22.29% 0.0054 269.7 / 0.6);
+  --border-a80: oklch(22.29% 0.0054 269.7 / 0.8);
+  --input-a30: oklch(22.29% 0.0054 269.7 / 0.3);
+  --label-surface-a50: oklch(16% 0.004 264 / 0.5);
   --overlay-base-a50: oklch(0% 0 0 / 0.5);
   --overlay-base-a60: oklch(0% 0 0 / 0.6);
-  --background-a60: oklch(15.9% 0.005 264 / 0.6);
+  --background-a60: oklch(10% 0.006 270 / 0.6);
   --ring-a50: oklch(56.7% 0.158 275 / 0.5);
 }
 
