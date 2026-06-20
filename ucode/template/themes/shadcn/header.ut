@@ -28,7 +28,7 @@
 				document.documentElement.setAttribute('data-sidebar-collapsed', collapsed ? 'true' : 'false');
 			})();
 		</script>
-		<style>html{background:oklch(98.5% .004 270)}html[data-darkmode=true]{background:oklch(14.5% .022 270)}</style>
+		<style>html{background:oklch(0.985 0.004 275)}html[data-darkmode=true]{background:oklch(0.159 0.005 264)}</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<meta name="color-scheme" content="light dark">
 		{% if (blank_page): %}
