@@ -1,10 +1,10 @@
 @layer base {
   *:not(html) {
-    @apply scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-foreground/30;
+    @apply scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-foreground-a30;
   }
 
   html {
-    @apply bg-background font-sans text-sm text-foreground scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-foreground/30;
+    @apply bg-background font-sans text-sm text-foreground scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-foreground-a30;
 
     body {
       @apply flex h-screen overflow-hidden;

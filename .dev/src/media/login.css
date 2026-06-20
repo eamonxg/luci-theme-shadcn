@@ -83,8 +83,8 @@
 
 .login-logo {
   @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl overflow-hidden;
-  border: 1px solid oklch(from var(--primary) l c h / 0.2);
-  background-color: oklch(from var(--primary) l c h / 0.1);
+  border: 1px solid var(--primary-a20);
+  background-color: var(--primary-a10);
 
   img {
     @apply h-full w-full;
@@ -116,8 +116,8 @@
 
 .login-error {
   @apply mb-4 rounded-2xl border px-4 py-3 text-sm;
-  border-color: oklch(from var(--destructive) l c h / 0.3);
-  background-color: oklch(from var(--destructive) l c h / 0.08);
+  border-color: var(--destructive-a30);
+  background-color: var(--destructive-a8);
   color: var(--destructive);
 }
 
@@ -134,12 +134,12 @@
 .login-input-glass {
   @apply relative rounded-2xl border transition-colors;
   border-color: var(--border);
-  background-color: oklch(from var(--foreground) l c h / 0.05);
+  background-color: var(--foreground-a5);
   backdrop-filter: blur(4px);
 
   &:focus-within {
-    border-color: oklch(from var(--primary) l c h / 0.7);
-    background-color: oklch(from var(--primary) l c h / 0.1);
+    border-color: var(--primary-a70);
+    background-color: var(--primary-a10);
   }
 }
 

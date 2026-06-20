@@ -67,8 +67,9 @@ export const DERIVATIONS = {
 // Baked-alpha variants. Each base (resolved per mode) is emitted at each alpha
 // as a flat oklch(L C H / a) literal -> replaces Tailwind /NN opacity modifiers.
 export const ALPHAS = {
-  primary: [5, 15, 25, 60, 90],
-  destructive: [10, 20, 30, 40, 50, 60, 70, 80, 90],
+  primary: [5, 10, 15, 20, 25, 60, 70, 90],
+  destructive: [8, 10, 20, 30, 40, 50, 60, 70, 80, 90],
+  foreground: [5, 30],
   secondary: [80],
   muted: [30, 80],
   "muted-foreground": [70],
