@@ -8,23 +8,24 @@
  * @see https://github.com/openwrt/luci/blob/master/themes/luci-theme-material/htdocs/luci-static/resources/menu-material.js
  */
 
-/** LuCI menu node `name` → icon basename under /luci-static/shadcn/icons/ */
+/** LuCI menu node `name` → icon basename under /luci-static/shadcn/icons/.
+    First-level nodes only — sub-level names such as firewall
+    (admin/network/firewall) or opkg (admin/system/opkg) never hit this map
+    and were removed as dead entries. */
 const ICON_MAP = {
   status: "activity",
-  network: "network",
   system: "settings",
+  network: "network",
   services: "layers",
-  security: "shield",
-  firewall: "shield",
   nas: "hard-drive",
-  storage: "layers",
-  qos: "activity",
-  vpn: "shield",
-  opkg: "layers",
-  statistics: "activity",
-  /** 管控 / 家长控制等非纯防火墙类入口 */
   control: "sliders-horizontal",
-  controls: "sliders-horizontal",
+  vpn: "shield",
+  docker: "container",
+  statistics: "chart-bar",
+  nlbw: "gauge",
+  /** Covers VoIP/PBX apps — no official OpenWrt package registers a
+      verified menu.d node under this name, best-effort key */
+  asterisk: "phone",
   /** luci-base `admin/logout` leaf */
   logout: "log-out",
   default: "layout-dashboard",
