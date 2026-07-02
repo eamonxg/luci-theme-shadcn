@@ -30,5 +30,6 @@
 @import "./components/_table.css";
 @import "./components/_form.css";
 @import "./components/_tabs.css";
+@import "./components/_view-transitions.css";
 @import "./_utilities.css";
 @import "./_shared.css";

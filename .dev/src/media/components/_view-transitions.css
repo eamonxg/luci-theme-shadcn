@@ -1,0 +1,25 @@
+/* Cross-document view transitions: same-origin full-page navigations
+   cross-fade instead of hard-flashing. Progressive enhancement — browsers
+   without support (e.g. Firefox) keep plain instant navigation. */
+
+@view-transition {
+  navigation: auto;
+}
+
+/* Chrome that persists across pages gets its own snapshot group, so it
+   stays visually static while only the rest of the page transitions.
+   view-transition-name must be unique per page — both selectors match
+   exactly one element rendered by header.ut. */
+#sidebar {
+  view-transition-name: shadcn-sidebar;
+}
+
+.content-card > .card-header {
+  view-transition-name: shadcn-topbar;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

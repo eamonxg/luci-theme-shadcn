@@ -30,14 +30,44 @@ const ICON_MAP = {
   default: "layout-dashboard",
 };
 
+/** sessionStorage key replayed pre-paint by the inline script in header.ut */
+const CACHE_KEY = "shadcn.sidebar.cache";
+
 return baseclass.extend({
   __init__() {
     ui.menu.load().then((tree) => {
       this.renderSidebarChrome();
       this.render(tree);
       this.initUciIndicator();
+      this.cacheSidebar();
+      window.addEventListener("pagehide", () => this.cacheSidebar());
       document.dispatchEvent(new Event("shadcn-sidebar-ready"));
     });
+  },
+
+  /**
+   * Snapshot the rendered sidebar so header.ut can replay it in the first
+   * frame of the next navigation (pagehide keeps accordion/scroll current).
+   */
+  cacheSidebar() {
+    // Set by header.ut's delegated logout-click listener.
+    if (window.shadcnSuppressSidebarCache) return;
+    const sidebar = document.getElementById("sidebar");
+    const nav = document.getElementById("sidebar-nav");
+    if (!sidebar || !nav) return;
+    try {
+      sessionStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({
+          v: 1,
+          lang: document.documentElement.lang || "",
+          html: sidebar.innerHTML,
+          scroll: nav.scrollTop || 0,
+        }),
+      );
+    } catch (e) {
+      /* storage full/disabled — next page just builds normally */
+    }
   },
 
   _mediaBase() {
@@ -107,7 +137,14 @@ return baseclass.extend({
    */
   renderSidebarChrome() {
     const sidebar = document.getElementById("sidebar");
-    if (!sidebar || sidebar.getAttribute("data-shadcn-built") === "1") return;
+    if (!sidebar) return;
+    if (sidebar.getAttribute("data-shadcn-built") === "1") {
+      // Restored from cache — chrome exists; just sync a possibly stale hostname.
+      const brand = sidebar.querySelector(".sidebar-brand-text");
+      const host = sidebar.getAttribute("data-hostname");
+      if (brand && host && brand.textContent !== host) brand.textContent = host;
+      return;
+    }
     sidebar.setAttribute("data-shadcn-built", "1");
 
     const media = this._mediaBase();
@@ -191,6 +228,21 @@ return baseclass.extend({
 
     const children = ui.menu.getChildren(branch);
     const dp = L.env.dispatchpath || [];
+
+    // If header.ut replayed the cached sidebar, this rebuild is a silent
+    // refresh — keep the user's accordion/scroll state instead of resetting
+    // to the default (active section open, scrolled to top).
+    const restored =
+      document
+        .getElementById("sidebar")
+        ?.getAttribute("data-shadcn-restored") === "1";
+    const openSections = restored
+      ? Array.from(
+          nav.querySelectorAll('.sidebar-accordion-item[data-open="true"]'),
+          (el) => el.getAttribute("data-section"),
+        )
+      : null;
+    const savedScrollTop = restored ? nav.scrollTop : 0;
 
     nav.innerHTML = "";
     if (foot) {
@@ -319,6 +371,18 @@ return baseclass.extend({
 
       nav.appendChild(item);
     });
+
+    if (restored) {
+      nav.querySelectorAll(".sidebar-accordion-item").forEach((item) => {
+        item.setAttribute(
+          "data-open",
+          openSections.includes(item.getAttribute("data-section"))
+            ? "true"
+            : "false",
+        );
+      });
+      nav.scrollTop = savedScrollTop;
+    }
   },
 
   renderBreadcrumb(branch, branchUrl) {

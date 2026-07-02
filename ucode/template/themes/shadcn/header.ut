@@ -82,6 +82,76 @@
 			data-media="{{ media }}"
 			data-hostname="{{ entityencode(striptags((boardinfo && boardinfo.hostname) ? boardinfo.hostname : 'Shadcn'), true) }}"
 		></div>
+		<script>
+			/* Pre-paint sidebar restore: menu-shadcn.js caches the rendered sidebar
+			   in sessionStorage; replay it synchronously here so the sidebar is in
+			   the first frame of every navigation instead of popping in after the
+			   menu XHR. menu-shadcn.js re-renders authoritatively once loaded. */
+			(function () {
+				/* Delegated (survives cache-restored links, which lose their JS
+				   handlers to innerHTML serialization): logging out must drop the
+				   cached menu so it isn't replayed into the next session. */
+				document.addEventListener('click', function (e) {
+					var t = e.target && e.target.closest ? e.target.closest('a.sidebar-logout') : null;
+					if (!t) return;
+					window.shadcnSuppressSidebarCache = true;
+					try { sessionStorage.removeItem('shadcn.sidebar.cache'); } catch (err) {}
+				}, true);
+
+				try {
+					var raw = sessionStorage.getItem('shadcn.sidebar.cache');
+					if (!raw) return;
+					var cache = JSON.parse(raw);
+					var sb = document.getElementById('sidebar');
+					if (!sb || !cache || cache.v !== 1 || cache.lang !== document.documentElement.lang) return;
+
+					sb.innerHTML = cache.html;
+					sb.setAttribute('data-shadcn-built', '1');
+					sb.setAttribute('data-shadcn-restored', '1');
+
+					/* The cached HTML carries the previous page's active highlight —
+					   recompute it for the current URL (longest link-path prefix wins,
+					   mirroring menu-shadcn's dispatchpath matching). */
+					var stale = sb.querySelectorAll('.active');
+					for (var i = 0; i < stale.length; i++) stale[i].classList.remove('active');
+
+					var links = sb.querySelectorAll('a.sidebar-sub-link, a.sidebar-nav-parent, a.sidebar-logout');
+					var path = location.pathname;
+					var best = null, bestLen = -1;
+					for (var j = 0; j < links.length; j++) {
+						var p = links[j].pathname;
+						if ((path === p || path.indexOf(p + '/') === 0) && p.length > bestLen) {
+							best = links[j];
+							bestLen = p.length;
+						}
+					}
+					if (best) {
+						var sub = best.closest('.sidebar-sub-item');
+						if (sub) {
+							sub.classList.add('active');
+							var acc = best.closest('.sidebar-accordion-item');
+							if (acc) {
+								acc.classList.add('active');
+								acc.setAttribute('data-open', 'true');
+								var open = sb.querySelectorAll('.sidebar-accordion-item[data-open="true"]');
+								for (var k = 0; k < open.length; k++)
+									if (open[k] !== acc) open[k].setAttribute('data-open', 'false');
+							}
+						} else if (best.classList.contains('sidebar-logout')) {
+							best.classList.add('active');
+						} else {
+							var item = best.closest('.sidebar-nav-item');
+							if (item) item.classList.add('active');
+						}
+					}
+
+					var nav = sb.querySelector('.sidebar-nav');
+					if (nav) nav.scrollTop = cache.scroll || 0;
+				} catch (e) {
+					try { sessionStorage.removeItem('shadcn.sidebar.cache'); } catch (e2) {}
+				}
+			})();
+		</script>
 
 		<div id="sidebar-overlay"></div>
 
