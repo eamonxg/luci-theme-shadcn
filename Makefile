@@ -8,8 +8,8 @@ include $(TOPDIR)/rules.mk
 LUCI_TITLE:=A modern sidebar LuCI theme for OpenWrt, built with shadcn/ui design language.
 LUCI_DEPENDS:=+luci-base
 
-PKG_VERSION:=0.2.7
-PKG_RELEASE:=20260701
+PKG_VERSION:=0.2.8
+PKG_RELEASE:=20260702
 PKG_LICENSE:=Apache-2.0
 
 LUCI_MINIFY_CSS:=
