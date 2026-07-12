@@ -174,21 +174,24 @@
 					</div>
 					<div class="card-header-right">
 						{#- Route search (C1): persistent input, dropdown built by menu-shadcn.js.
-						    Only msgids that already exist in the luci-base catalog are used. -#}
+						    The theme ships no translations of its own. 'Cancel'/'Navigation'/
+						    'No entries available' are luci-base msgids; 'Type to filter…' is
+						    luci-app-package-manager's, so it shows English where that app is
+						    absent — kept for the better wording where it does translate. -#}
 						<div class="topbar-search" id="topbar-search">
 							<button
 								id="topbar-search-open"
 								class="topbar-icon-btn topbar-search-open"
 								type="button"
-								aria-label="{{ _('Filter') }}"
+								aria-label="{{ _('Type to filter…') }}"
 							></button>
 							<div class="topbar-search-box">
 								<input
 									id="topbar-search-input"
 									class="topbar-search-input"
 									type="text"
-									placeholder="{{ _('Filter') }}"
-									aria-label="{{ _('Filter') }}"
+									placeholder="{{ _('Type to filter…') }}"
+									aria-label="{{ _('Type to filter…') }}"
 									autocomplete="off"
 									spellcheck="false"
 								>

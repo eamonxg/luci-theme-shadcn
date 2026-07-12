@@ -393,8 +393,8 @@ return baseclass.extend({
    * is the same two-level navigation model the sidebar renders from — no
    * extra requests. ⌘K / Ctrl+K focuses the input globally; <md a toggle
    * button turns the topbar into a full-width search bar instead.
-   * Only msgids that already exist in the luci-base catalog are used —
-   * the theme intentionally ships no translations of its own.
+   * The theme ships no translations of its own — it reuses existing LuCI
+   * msgids (see header.ut for the search chrome's i18n specifics).
    */
   initSearch(branch, branchUrl) {
     const wrap = document.getElementById("topbar-search");
