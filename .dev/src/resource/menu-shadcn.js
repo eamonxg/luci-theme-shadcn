@@ -454,8 +454,11 @@ return baseclass.extend({
       if (e.isComposing || e.keyCode === 229) return;
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
-        this.moveSearchSelection(e.key === "ArrowDown" ? 1 : -1);
-      } else if (e.key === "Enter") {
+        // A desktop Escape hides the dropdown but keeps its rows — arrows
+        // reopen it instead of moving an invisible selection.
+        if (pop.hidden) this.renderSearchResults(input.value);
+        else this.moveSearchSelection(e.key === "ArrowDown" ? 1 : -1);
+      } else if (e.key === "Enter" && !pop.hidden) {
         pop.querySelector(".is-selected")?.click();
       }
     });
@@ -479,8 +482,10 @@ return baseclass.extend({
       // composition, not the dropdown); keyCode 229 covers engines that
       // don't set isComposing on the trailing keydown.
       if (e.isComposing || e.keyCode === 229) return;
+      // Only the advertised shortcut — ⌘K on Mac, Ctrl+K elsewhere — so
+      // macOS Ctrl+K (kill-to-end-of-line in text fields) keeps working.
       if (
-        (e.metaKey || e.ctrlKey) &&
+        (isMac ? e.metaKey : e.ctrlKey) &&
         !e.altKey &&
         !e.shiftKey &&
         (e.key || "").toLowerCase() === "k"
@@ -560,7 +565,11 @@ return baseclass.extend({
             [
               this._sectionIcon(page.icon, 15),
               page.group
-                ? E("span", { class: "result-group" }, [page.group])
+                ? E(
+                    "span",
+                    { class: "result-group" },
+                    this.highlightSearchMatch(page.group, q),
+                  )
                 : "",
               page.group ? E("span", { class: "result-sep" }, ["›"]) : "",
               E(
@@ -585,7 +594,10 @@ return baseclass.extend({
   },
 
   highlightSearchMatch(title, q) {
-    const at = title.toLowerCase().indexOf(q);
+    const lower = title.toLowerCase();
+    // Case folding can change string length ("İ" → "i̇"), skewing offsets
+    // into the original — skip highlighting rather than mis-slice.
+    const at = lower.length === title.length ? lower.indexOf(q) : -1;
     if (at < 0) return [title];
 
     return [

@@ -180,15 +180,15 @@
 								id="topbar-search-open"
 								class="topbar-icon-btn topbar-search-open"
 								type="button"
-								aria-label="{{ _('Type to filter…') }}"
+								aria-label="{{ _('Filter') }}"
 							></button>
 							<div class="topbar-search-box">
 								<input
 									id="topbar-search-input"
 									class="topbar-search-input"
 									type="text"
-									placeholder="{{ _('Type to filter…') }}"
-									aria-label="{{ _('Type to filter…') }}"
+									placeholder="{{ _('Filter') }}"
+									aria-label="{{ _('Filter') }}"
 									autocomplete="off"
 									spellcheck="false"
 								>
