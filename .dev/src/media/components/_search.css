@@ -113,8 +113,10 @@ body[data-topbar-search="open"] {
     @apply max-md:flex;
   }
 
+  /* Borderless bar inside the header row; 16px text keeps iOS Safari from
+     zooming the page when the input gains focus. */
   input.topbar-search-input {
-    @apply max-md:w-full max-md:pr-3 max-md:focus:w-full;
+    @apply max-md:w-full max-md:border-0 max-md:bg-transparent max-md:pr-3 max-md:text-base max-md:focus:w-full max-md:focus:ring-0;
   }
 
   .topbar-search-key {

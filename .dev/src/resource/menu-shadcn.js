@@ -507,8 +507,12 @@ return baseclass.extend({
   openSearch() {
     // The mobile entry button is only displayed <md — its visibility says
     // whether the takeover applies without hard-coding the breakpoint.
-    if (this.searchOpenBtn && this.searchOpenBtn.offsetParent !== null)
+    if (this.searchOpenBtn && this.searchOpenBtn.offsetParent !== null) {
       document.body.setAttribute("data-topbar-search", "open");
+      // Full-screen surface: the (possibly empty) results panel covers the
+      // page immediately, before the first keystroke.
+      this.renderSearchResults(this.searchInput.value);
+    }
     this.searchInput.focus();
     this.searchInput.select();
   },
@@ -530,9 +534,11 @@ return baseclass.extend({
   renderSearchResults(value) {
     const q = value.trim().toLowerCase();
     if (!q) {
-      // Quiet until typed (Spotlight manner).
-      this.searchPop.hidden = true;
+      // Quiet until typed (Spotlight manner) — except during the mobile
+      // takeover, where the empty panel stays up as the page cover.
       this.searchPop.replaceChildren();
+      this.searchPop.hidden =
+        document.body.getAttribute("data-topbar-search") !== "open";
       return;
     }
 
