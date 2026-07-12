@@ -198,6 +198,7 @@ return baseclass.extend({
 
     this.renderSidebarNav(branch, branchUrl);
     this.renderBreadcrumb(branch, branchUrl);
+    this.initSearch(branch, branchUrl);
 
     const tab = document.getElementById("tabmenu");
     if (tab) {
@@ -384,6 +385,228 @@ return baseclass.extend({
       });
       nav.scrollTop = savedScrollTop;
     }
+  },
+
+  /**
+   * Topbar route search (C1): persistent input in the card header (markup
+   * lives in header.ut), results dropdown built here on demand. The index
+   * is the same two-level navigation model the sidebar renders from — no
+   * extra requests. ⌘K / Ctrl+K focuses the input globally; <md a toggle
+   * button turns the topbar into a full-width search bar instead.
+   * Only msgids that already exist in the luci-base catalog are used —
+   * the theme intentionally ships no translations of its own.
+   */
+  initSearch(branch, branchUrl) {
+    const wrap = document.getElementById("topbar-search");
+    const input = document.getElementById("topbar-search-input");
+    const pop = document.getElementById("topbar-search-pop");
+    if (!wrap || !input || !pop || this.searchIndex) return;
+
+    this.searchIndex = [];
+    ui.menu.getChildren(branch).forEach((section) => {
+      if (this._isLogoutMenuItem(section)) return;
+      const subs = ui.menu.getChildren(section);
+      if (subs.length === 0) {
+        this.searchIndex.push({
+          title: _(section.title),
+          name: section.name,
+          group: null,
+          icon: section.name,
+          href: L.url(branchUrl, section.name),
+        });
+        return;
+      }
+      subs.forEach((page) => {
+        this.searchIndex.push({
+          title: _(page.title),
+          name: page.name,
+          group: _(section.title),
+          icon: section.name,
+          href: L.url(branchUrl, section.name, page.name),
+        });
+      });
+    });
+
+    this.searchWrap = wrap;
+    this.searchInput = input;
+    this.searchPop = pop;
+    this.searchOpenBtn = document.getElementById("topbar-search-open");
+
+    const isMac = /Mac|iP(ad|hone|od)/.test(navigator.platform);
+    const keyEl = wrap.querySelector(".topbar-search-key");
+    if (keyEl) {
+      keyEl.textContent = isMac ? "⌘K" : "Ctrl+K";
+      keyEl.hidden = false;
+    }
+    input.setAttribute("aria-keyshortcuts", isMac ? "Meta+K" : "Control+K");
+
+    input.addEventListener("input", () =>
+      this.renderSearchResults(input.value),
+    );
+    // Refocusing a non-empty input brings its dropdown back.
+    input.addEventListener("focus", () =>
+      this.renderSearchResults(input.value),
+    );
+    input.addEventListener("keydown", (e) => {
+      // Mid-composition these keys belong to the IME: Enter commits the
+      // buffer (navigating away for pinyin users) and arrows move inside
+      // the candidate list, not the results.
+      if (e.isComposing || e.keyCode === 229) return;
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        this.moveSearchSelection(e.key === "ArrowDown" ? 1 : -1);
+      } else if (e.key === "Enter") {
+        pop.querySelector(".is-selected")?.click();
+      }
+    });
+
+    // mousemove, not mouseover: scrollIntoView() slides rows under a
+    // stationary pointer, which fires mouseover and would snap the
+    // selection back to whatever the mouse happens to rest on.
+    pop.addEventListener("mousemove", (e) => {
+      const row = e.target?.closest?.(".topbar-search-result");
+      if (row && !row.classList.contains("is-selected"))
+        this.setSearchSelection(row);
+    });
+
+    if (this.searchOpenBtn)
+      this.searchOpenBtn.addEventListener("click", () => this.openSearch());
+    const cancel = document.getElementById("topbar-search-cancel");
+    if (cancel) cancel.addEventListener("click", () => this.closeSearch());
+
+    document.addEventListener("keydown", (e) => {
+      // An IME swallows these keys while composing (Esc cancels the
+      // composition, not the dropdown); keyCode 229 covers engines that
+      // don't set isComposing on the trailing keydown.
+      if (e.isComposing || e.keyCode === 229) return;
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        !e.altKey &&
+        !e.shiftKey &&
+        (e.key || "").toLowerCase() === "k"
+      ) {
+        e.preventDefault();
+        this.openSearch();
+      } else if (e.key === "Escape") {
+        this.closeSearch();
+      }
+    });
+
+    // Clicking/tapping outside dismisses the dropdown (desktop only — the
+    // mobile takeover has no outside and exits via Cancel/Escape).
+    document.addEventListener("pointerdown", (e) => {
+      if (
+        !pop.hidden &&
+        document.body.getAttribute("data-topbar-search") !== "open" &&
+        !wrap.contains(e.target)
+      )
+        pop.hidden = true;
+    });
+  },
+
+  openSearch() {
+    // The mobile entry button is only displayed <md — its visibility says
+    // whether the takeover applies without hard-coding the breakpoint.
+    if (this.searchOpenBtn && this.searchOpenBtn.offsetParent !== null)
+      document.body.setAttribute("data-topbar-search", "open");
+    this.searchInput.focus();
+    this.searchInput.select();
+  },
+
+  closeSearch() {
+    if (document.body.getAttribute("data-topbar-search") === "open") {
+      // Mobile takeover dismissal resets like a dialog close.
+      document.body.removeAttribute("data-topbar-search");
+      this.searchInput.value = "";
+      this.searchPop.hidden = true;
+      this.searchPop.replaceChildren();
+      this.searchInput.blur();
+      return;
+    }
+    // Desktop Escape only hides the dropdown; text stays for refinement.
+    if (!this.searchPop.hidden) this.searchPop.hidden = true;
+  },
+
+  renderSearchResults(value) {
+    const q = value.trim().toLowerCase();
+    if (!q) {
+      // Quiet until typed (Spotlight manner).
+      this.searchPop.hidden = true;
+      this.searchPop.replaceChildren();
+      return;
+    }
+
+    const matches = this.searchIndex.filter(
+      (page) =>
+        page.title.toLowerCase().includes(q) ||
+        page.name.toLowerCase().includes(q) ||
+        page.group?.toLowerCase().includes(q),
+    );
+
+    const rows = matches.length
+      ? matches.map((page, i) =>
+          E(
+            "a",
+            {
+              class: `topbar-search-result${i ? "" : " is-selected"}`,
+              href: page.href,
+            },
+            [
+              this._sectionIcon(page.icon, 15),
+              page.group
+                ? E("span", { class: "result-group" }, [page.group])
+                : "",
+              page.group ? E("span", { class: "result-sep" }, ["›"]) : "",
+              E(
+                "span",
+                { class: "result-title" },
+                this.highlightSearchMatch(page.title, q),
+              ),
+              E("kbd", { class: "result-enter" }, ["↵"]),
+            ],
+          ),
+        )
+      : [
+          E("div", { class: "topbar-search-empty" }, [
+            _("No entries available"),
+          ]),
+        ];
+
+    this.searchPop.replaceChildren(
+      E("div", { class: "topbar-search-list" }, rows),
+    );
+    this.searchPop.hidden = false;
+  },
+
+  highlightSearchMatch(title, q) {
+    const at = title.toLowerCase().indexOf(q);
+    if (at < 0) return [title];
+
+    return [
+      title.slice(0, at),
+      E("mark", {}, [title.slice(at, at + q.length)]),
+      title.slice(at + q.length),
+    ];
+  },
+
+  setSearchSelection(row) {
+    this.searchPop
+      .querySelector(".is-selected")
+      ?.classList.remove("is-selected");
+    row.classList.add("is-selected");
+  },
+
+  moveSearchSelection(delta) {
+    const rows = [...this.searchPop.querySelectorAll(".topbar-search-result")];
+    if (!rows.length) return;
+
+    const current = rows.findIndex((row) =>
+      row.classList.contains("is-selected"),
+    );
+    const next = rows[(current + delta + rows.length) % rows.length];
+
+    this.setSearchSelection(next);
+    next.scrollIntoView({ block: "nearest" });
   },
 
   renderBreadcrumb(branch, branchUrl) {

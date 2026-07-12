@@ -173,6 +173,30 @@
 						<nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="{{ _('Breadcrumb') }}"></nav>
 					</div>
 					<div class="card-header-right">
+						{#- Route search (C1): persistent input, dropdown built by menu-shadcn.js.
+						    Only msgids that already exist in the luci-base catalog are used. -#}
+						<div class="topbar-search" id="topbar-search">
+							<button
+								id="topbar-search-open"
+								class="topbar-icon-btn topbar-search-open"
+								type="button"
+								aria-label="{{ _('Type to filter…') }}"
+							></button>
+							<div class="topbar-search-box">
+								<input
+									id="topbar-search-input"
+									class="topbar-search-input"
+									type="text"
+									placeholder="{{ _('Type to filter…') }}"
+									aria-label="{{ _('Type to filter…') }}"
+									autocomplete="off"
+									spellcheck="false"
+								>
+								<kbd class="topbar-search-key" hidden></kbd>
+								<button id="topbar-search-cancel" class="topbar-search-cancel" type="button">{{ _('Cancel') }}</button>
+							</div>
+							<div id="topbar-search-pop" class="topbar-search-pop" aria-label="{{ _('Navigation') }}" hidden></div>
+						</div>
 						<div id="indicators" class="topbar-indicators"></div>
 						<button
 							id="theme-toggle-btn"
