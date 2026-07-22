@@ -471,6 +471,13 @@ return baseclass.extend({
 
   openPalette() {
     if (!this.palOverlay) this._buildPalette();
+    // Remember what had focus so closing returns the caret where the user
+    // left it — ⌘K can fire from anywhere, not just the trigger.
+    const from = document.activeElement;
+    this.palReturn =
+      from && from !== document.body && !this.palOverlay.contains(from)
+        ? from
+        : null;
     this.palOverlay.hidden = false;
     this._renderPalette();
     this.palInput.focus();
@@ -482,7 +489,9 @@ return baseclass.extend({
     this.palOverlay.hidden = true;
     this.palInput.value = "";
     // Hand focus back so a ⌘K → esc round-trip doesn't strand the caret.
-    document.getElementById("cmdk-trigger")?.focus();
+    const back = this.palReturn || document.getElementById("cmdk-trigger");
+    this.palReturn = null;
+    if (back && back.isConnected) back.focus();
   },
 
   _buildPalette() {
@@ -490,6 +499,9 @@ return baseclass.extend({
       class: "cmdk-input",
       type: "text",
       placeholder: _("Type to filter…"),
+      // A placeholder is not an accessible name — it is dropped once the
+      // field has text. Same msgid as the placeholder, so no new string.
+      "aria-label": _("Type to filter…"),
       autocomplete: "off",
       spellcheck: "false",
       enterkeyhint: "go",
@@ -570,6 +582,21 @@ return baseclass.extend({
       ],
     );
 
+    // aria-modal states the intent but does not stop Tab from walking into
+    // the obscured page. Rows sit outside the tab order (tabindex -1), so
+    // the cycle is just the input row's controls — Clear stays away while
+    // the field is empty and Cancel is <md-only, hence offsetParent.
+    panel.addEventListener("keydown", (e) => {
+      if (e.key !== "Tab") return;
+      const ring = [this.palInput, clear, cancel].filter(
+        (el) => el.offsetParent !== null,
+      );
+      if (!ring.length) return;
+      e.preventDefault();
+      const at = ring.indexOf(document.activeElement);
+      ring[(at + (e.shiftKey ? -1 : 1) + ring.length) % ring.length].focus();
+    });
+
     this.palOverlay = E("div", { id: "cmdk-overlay", hidden: "" }, [panel]);
     this.palOverlay.addEventListener("pointerdown", (e) => {
       if (e.target === this.palOverlay) this.closePalette();
@@ -588,11 +615,11 @@ return baseclass.extend({
       const hits = [];
       if (!cmdOnly) {
         this.palIndex.forEach((page) => {
-          const m = this._palScore(q, page.title, page.path);
+          const m = this._palScore(q, page.title, page.path, page.group);
           if (m)
             hits.push({
               score: m.score,
-              node: this._palPageRow(page, m.ranges),
+              node: this._palPageRow(page, m.ranges, m.groupRanges),
             });
         });
       }
@@ -628,12 +655,20 @@ return baseclass.extend({
     this.palList.querySelector(".cmdk-row")?.classList.add("is-selected");
   },
 
-  _palPageRow(page, ranges) {
+  _palPageRow(page, ranges, groupRanges) {
     // Hierarchy reads left→right like the breadcrumb: 一级 › 二级. Group
     // names are uniformly short, so titles align into a clean column.
-    const row = E("a", { class: "cmdk-row", href: page.href }, [
+    // tabindex -1: rows are reached with ↑/↓, which keeps the panel's tab
+    // cycle short enough to contain (see _buildPalette).
+    const row = E("a", { class: "cmdk-row", href: page.href, tabindex: "-1" }, [
       this._sectionIcon(page.icon, 15),
-      page.group ? E("span", { class: "cmdk-group-name" }, [page.group]) : "",
+      page.group
+        ? E(
+            "span",
+            { class: "cmdk-group-name" },
+            this._palMark(page.group, groupRanges),
+          )
+        : "",
       page.group ? E("span", { class: "cmdk-sep" }, ["›"]) : "",
       E("span", { class: "cmdk-title" }, this._palMark(page.title, ranges)),
       E("span", { class: "cmdk-right" }, [
@@ -659,7 +694,12 @@ return baseclass.extend({
     const active = themeNow === cmd.mode;
     const row = E(
       "button",
-      { class: "cmdk-row cmdk-cmd", type: "button", "data-mode": cmd.mode },
+      {
+        class: "cmdk-row cmdk-cmd",
+        type: "button",
+        tabindex: "-1",
+        "data-mode": cmd.mode,
+      },
       [
         this._iconFile(cmd.iconFile, 15),
         E("span", { class: "cmdk-title" }, this._palMark(cmd.title, ranges)),
@@ -686,14 +726,19 @@ return baseclass.extend({
 
   /**
    * Subsequence scorer: every query char must appear in order; consecutive
-   * runs and word/segment starts weigh extra. Title hits rank above path
-   * hits and carry highlight ranges; path hits rank without highlighting.
+   * runs and word/segment starts weigh extra. Title hits rank first, then
+   * the section label, then the language-neutral path. Title and label hits
+   * highlight the field they matched; a path hit ranks without highlighting.
    */
-  _palScore(q, title, path) {
+  _palScore(q, title, path, group) {
     const t = this._palSub(q, title.toLowerCase());
-    if (t) return { score: t.score + 10, ranges: t.ranges };
+    if (t) return { score: t.score + 10, ranges: t.ranges, groupRanges: null };
+    // On a localized instance the section label is the only group name the
+    // user ever sees: querying the translated 'Network' must reach its rows.
+    const g = group ? this._palSub(q, group.toLowerCase()) : null;
+    if (g) return { score: g.score + 5, ranges: null, groupRanges: g.ranges };
     const p = this._palSub(q, String(path || "").toLowerCase());
-    return p ? { score: p.score, ranges: null } : null;
+    return p ? { score: p.score, ranges: null, groupRanges: null } : null;
   },
 
   _palSub(q, low) {
