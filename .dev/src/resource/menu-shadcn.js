@@ -502,6 +502,13 @@ return baseclass.extend({
       // A placeholder is not an accessible name — it is dropped once the
       // field has text. Same msgid as the placeholder, so no new string.
       "aria-label": _("Type to filter…"),
+      // Combobox pattern: focus stays in this field the whole time, so the
+      // row that ↑/↓ and Enter act on is named by aria-activedescendant
+      // rather than by moving focus onto it.
+      role: "combobox",
+      "aria-expanded": "true",
+      "aria-controls": "cmdk-list",
+      "aria-autocomplete": "list",
       autocomplete: "off",
       spellcheck: "false",
       enterkeyhint: "go",
@@ -537,7 +544,9 @@ return baseclass.extend({
     cancel.addEventListener("click", () => this.closePalette());
 
     this.palList = E("div", {
+      id: "cmdk-list",
       class: "cmdk-list",
+      role: "listbox",
       "aria-label": _("Navigation"),
     });
     // mousemove, not mouseover: scrollIntoView() slides rows under a
@@ -636,48 +645,76 @@ return baseclass.extend({
     } else {
       rows = [];
       if (!cmdOnly) {
-        rows.push(E("div", { class: "cmdk-group" }, [_("Navigation")]));
+        // role=presentation: a listbox owns options, and these headings are
+        // decoration — every page row already carries its group name.
+        rows.push(
+          E("div", { class: "cmdk-group", role: "presentation" }, [
+            _("Navigation"),
+          ]),
+        );
         this.palIndex.forEach((page) =>
           rows.push(this._palPageRow(page, null)),
         );
       }
-      rows.push(E("div", { class: "cmdk-group" }, [_("Design")]));
+      rows.push(
+        E("div", { class: "cmdk-group", role: "presentation" }, [_("Design")]),
+      );
       this.palModes.forEach((cmd) =>
         rows.push(this._palModeRow(cmd, themeNow, null)),
       );
     }
 
     if (!rows.length)
-      rows = [E("div", { class: "cmdk-empty" }, [_("No entries available")])];
+      rows = [
+        E("div", { class: "cmdk-empty", role: "presentation" }, [
+          _("No entries available"),
+        ]),
+      ];
 
     this.palList.replaceChildren(...rows);
     this.palList.scrollTop = 0;
-    this.palList.querySelector(".cmdk-row")?.classList.add("is-selected");
+    // aria-activedescendant points at an id, and the list is rebuilt on
+    // every keystroke, so hand out ids fresh alongside the rows.
+    const built = this.palList.querySelectorAll(".cmdk-row");
+    built.forEach((row, i) => (row.id = `cmdk-row-${i}`));
+    if (built.length) this._palSelect(built[0]);
+    else this.palInput.removeAttribute("aria-activedescendant");
   },
 
   _palPageRow(page, ranges, groupRanges) {
     // Hierarchy reads left→right like the breadcrumb: 一级 › 二级. Group
     // names are uniformly short, so titles align into a clean column.
     // tabindex -1: rows are reached with ↑/↓, which keeps the panel's tab
-    // cycle short enough to contain (see _buildPalette).
-    const row = E("a", { class: "cmdk-row", href: page.href, tabindex: "-1" }, [
-      this._sectionIcon(page.icon, 15),
-      page.group
-        ? E(
-            "span",
-            { class: "cmdk-group-name" },
-            this._palMark(page.group, groupRanges),
-          )
-        : "",
-      page.group ? E("span", { class: "cmdk-sep" }, ["›"]) : "",
-      E("span", { class: "cmdk-title" }, this._palMark(page.title, ranges)),
-      E("span", { class: "cmdk-right" }, [
-        // The dispatch path anchors the row's right edge with real,
-        // language-neutral data (Quick-Open manner) instead of dead space.
-        E("code", { class: "cmdk-path" }, [page.path]),
-        E("kbd", { class: "cmdk-enter" }, ["↵"]),
-      ]),
-    ]);
+    // cycle short enough to contain (see _buildPalette). option/aria-selected
+    // is how that arrow-key selection reaches assistive tech.
+    const row = E(
+      "a",
+      {
+        class: "cmdk-row",
+        href: page.href,
+        role: "option",
+        "aria-selected": "false",
+        tabindex: "-1",
+      },
+      [
+        this._sectionIcon(page.icon, 15),
+        page.group
+          ? E(
+              "span",
+              { class: "cmdk-group-name" },
+              this._palMark(page.group, groupRanges),
+            )
+          : "",
+        page.group ? E("span", { class: "cmdk-sep" }, ["›"]) : "",
+        E("span", { class: "cmdk-title" }, this._palMark(page.title, ranges)),
+        E("span", { class: "cmdk-right" }, [
+          // The dispatch path anchors the row's right edge with real,
+          // language-neutral data (Quick-Open manner) instead of dead space.
+          E("code", { class: "cmdk-path" }, [page.path]),
+          E("kbd", { class: "cmdk-enter" }, ["↵"]),
+        ]),
+      ],
+    );
     if (page.isLogout)
       row.addEventListener("click", () => {
         // Same contract as header.ut's delegated a.sidebar-logout listener:
@@ -697,6 +734,8 @@ return baseclass.extend({
       {
         class: "cmdk-row cmdk-cmd",
         type: "button",
+        role: "option",
+        "aria-selected": "false",
         tabindex: "-1",
         "data-mode": cmd.mode,
       },
@@ -716,6 +755,10 @@ return baseclass.extend({
       // is rebuilt, so re-select this command — the selection must not
       // snap back to the first row after an Enter.
       this._renderPalette();
+      // A mouse click focuses the button, which the rebuild above then
+      // discards, stranding focus on <body> outside the panel's tab cycle.
+      // Focus belongs in the field anyway — that is where Enter is read.
+      this.palInput.focus();
       const again = this.palList.querySelector(
         `.cmdk-row[data-mode="${cmd.mode}"]`,
       );
@@ -781,8 +824,14 @@ return baseclass.extend({
   },
 
   _palSelect(row) {
-    this.palList.querySelector(".is-selected")?.classList.remove("is-selected");
+    const prev = this.palList.querySelector(".is-selected");
+    if (prev) {
+      prev.classList.remove("is-selected");
+      prev.setAttribute("aria-selected", "false");
+    }
     row.classList.add("is-selected");
+    row.setAttribute("aria-selected", "true");
+    this.palInput.setAttribute("aria-activedescendant", row.id);
   },
 
   _palMove(delta) {
