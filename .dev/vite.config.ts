@@ -71,6 +71,14 @@ function createLuciJsCompressPlugin(): Plugin {
 const PATCH_PUBLIC_PREFIX = "/luci-static/shadcn/patches/";
 const PATCH_SRC_DIR = resolve(CURRENT_DIR, "src/media/patches");
 
+// Theme icons: rewrite /luci-static/shadcn/icons/<name>.svg to the publicDir
+// copy so icons added in this checkout resolve in dev. Without this the
+// request falls through to the OpenWrt proxy, whose installed package may
+// predate the icon (404 until the package is rebuilt). Only local files are
+// rewritten — anything else still proxies through.
+const ICON_PUBLIC_PREFIX = "/luci-static/shadcn/icons/";
+const ICON_SRC_DIR = resolve(CURRENT_DIR, "public/shadcn/icons");
+
 function createLocalServePlugin(): Plugin {
   const cssRoutes: Record<string, string> = {
     "/luci-static/shadcn/main.css": "/src/media/main.css",
@@ -113,6 +121,16 @@ function createLocalServePlugin(): Plugin {
           if (existsSync(join(PATCH_SRC_DIR, file))) {
             req.url =
               `/src/media/patches/${file}` + (search ? `?${search}` : "");
+            return next();
+          }
+        }
+        if (
+          pathname.startsWith(ICON_PUBLIC_PREFIX) &&
+          pathname.endsWith(".svg")
+        ) {
+          const file = basename(pathname);
+          if (existsSync(join(ICON_SRC_DIR, file))) {
+            req.url = `/shadcn/icons/${file}` + (search ? `?${search}` : "");
             return next();
           }
         }

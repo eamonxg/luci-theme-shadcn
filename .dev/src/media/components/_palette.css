@@ -1,0 +1,190 @@
+/**
+ * Command palette (⌘K), replaces the topbar route search: trigger button
+ * in the card header (markup in header.ut) + a lazily built overlay panel
+ * (menu-shadcn.js). Desktop: centered dialog over a dimmed, blurred page.
+ * <md: full-screen takeover in the system-search-page manner — input row
+ * with a right-edge Cancel, grouped content visible immediately.
+ */
+
+/* ── Trigger ─────────────────────────────────────────────────────── */
+
+button.cmdk-trigger {
+  @apply border-input text-muted-foreground relative flex h-8 cursor-pointer items-center gap-2.5 rounded-lg border bg-transparent pr-1.5 pl-7.5 text-sm;
+  @apply max-md:w-8 max-md:justify-center max-md:border-0 max-md:p-0;
+
+  &::before {
+    @apply pointer-events-none absolute left-2.5 size-3.5 bg-current content-[''] [mask:url('@assets/icons/search.svg')_center/contain_no-repeat];
+    @apply max-md:static max-md:size-4;
+  }
+
+  &:hover {
+    @apply border-muted-foreground max-md:bg-muted;
+  }
+}
+
+.cmdk-trigger-label {
+  @apply truncate text-left max-md:hidden;
+}
+
+.cmdk-trigger-key {
+  @apply border-border bg-label-surface text-muted-foreground rounded-md border px-1.5 py-px font-mono text-xs max-md:hidden;
+}
+
+/* ── Overlay & panel ─────────────────────────────────────────────── */
+
+#cmdk-overlay {
+  @apply bg-overlay-base-a60 fixed inset-0 z-50 flex items-start justify-center backdrop-blur-sm;
+  @apply max-md:bg-transparent max-md:backdrop-blur-none;
+
+  &[hidden] {
+    @apply hidden;
+  }
+}
+
+.cmdk-panel {
+  @apply border-panel-border bg-panel-bg mt-[15vh] flex w-[min(600px,calc(100vw-32px))] flex-col overflow-hidden rounded-xl border shadow-2xl;
+  @apply transition-[opacity,translate] duration-150 ease-out starting:-translate-y-1.5 starting:opacity-0;
+  @apply max-md:mt-0 max-md:h-dvh max-md:w-full max-md:rounded-none max-md:border-0 max-md:pt-[env(safe-area-inset-top)] max-md:shadow-none max-md:transition-none;
+}
+
+/* ── Input row ───────────────────────────────────────────────────── */
+
+.cmdk-inputrow {
+  @apply border-panel-border relative flex h-12 shrink-0 items-center gap-2 border-b pr-3 pl-10;
+  @apply max-md:h-14 max-md:pr-1.5;
+
+  &::before {
+    @apply text-muted-foreground pointer-events-none absolute left-3.5 size-3.5 bg-current content-[''] [mask:url('@assets/icons/search.svg')_center/contain_no-repeat];
+  }
+
+  /* Clear appears only once there is text to clear. */
+  &:has(input.cmdk-input:placeholder-shown) button.cmdk-clear {
+    @apply hidden;
+  }
+}
+
+/* input.-prefixed to tie with the global input[type="text"] baseline
+   (specificity 0,1,1) so the later import wins its border/ring reset. */
+input.cmdk-input {
+  @apply text-text h-full min-w-0 flex-1 border-0 bg-transparent text-sm shadow-none outline-none;
+  /* 16px keeps iOS Safari from zooming the page when the input focuses. */
+  @apply max-md:text-base;
+
+  &:focus {
+    @apply border-0 ring-0 outline-none;
+  }
+}
+
+button.cmdk-clear {
+  @apply text-muted-foreground flex size-5.5 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0;
+
+  &::before {
+    @apply size-3.25 bg-current content-[''] [mask:url('@assets/icons/x.svg')_center/contain_no-repeat];
+  }
+
+  &:hover {
+    @apply bg-muted text-foreground;
+  }
+}
+
+.cmdk-esc {
+  @apply border-border bg-label-surface text-muted-foreground rounded-md border px-1.5 py-px font-mono text-xs max-md:hidden;
+}
+
+/* Right-edge Cancel — the <md takeover's dismissal, system-search style. */
+button.cmdk-cancel {
+  @apply text-primary hidden shrink-0 cursor-pointer border-0 bg-transparent text-sm;
+  @apply max-md:block max-md:py-1.5 max-md:pr-4 max-md:pl-1.5;
+}
+
+/* ── List ────────────────────────────────────────────────────────── */
+
+.cmdk-list {
+  @apply max-h-[342px] overflow-y-auto overscroll-contain p-1;
+  @apply max-md:max-h-none max-md:flex-1 max-md:p-2 max-md:pb-[calc(0.75rem+env(safe-area-inset-bottom))];
+}
+
+.cmdk-group {
+  /* More air above than below so the label reads as owning its rows. */
+  @apply text-muted-foreground px-2 pt-2.5 pb-1 text-xs font-medium tracking-wide;
+}
+
+.cmdk-row {
+  @apply text-text flex w-full cursor-pointer items-center gap-2 rounded-lg border-0 bg-transparent px-2 py-1.5 text-left text-sm no-underline;
+  @apply max-md:min-h-11 max-md:px-2.5;
+
+  /* The base stylesheet underlines every anchor on hover — a list row is
+     not prose, keep it flat. */
+  &:hover {
+    @apply no-underline;
+  }
+
+  img.shadcn-icon {
+    @apply size-3.75 shrink-0;
+  }
+
+  mark {
+    @apply text-primary bg-transparent font-semibold;
+  }
+
+  .cmdk-title {
+    @apply text-foreground min-w-0 truncate font-medium;
+  }
+
+  .cmdk-sep {
+    @apply text-muted-foreground shrink-0 opacity-60;
+  }
+
+  .cmdk-group-name {
+    @apply text-muted-foreground shrink-0;
+  }
+
+  .cmdk-right {
+    @apply ml-auto flex shrink-0 items-center gap-2;
+  }
+
+  .cmdk-path {
+    @apply text-muted-foreground font-mono text-xs opacity-70;
+    @apply max-md:hidden;
+  }
+
+  .cmdk-enter {
+    @apply border-border bg-label-surface text-muted-foreground invisible rounded-md border px-1.5 py-px font-mono text-xs;
+    @apply max-md:hidden;
+  }
+
+  .cmdk-check {
+    @apply text-primary block size-3.5 shrink-0 bg-current [mask:url('@assets/icons/check.svg')_center/contain_no-repeat];
+  }
+
+  &.is-selected {
+    @apply bg-muted;
+
+    .cmdk-enter {
+      @apply visible;
+    }
+  }
+}
+
+.cmdk-empty {
+  @apply text-muted-foreground px-3 py-7 text-center text-sm;
+}
+
+/* ── Footer (desktop-only keyboard hints) ────────────────────────── */
+
+.cmdk-footer {
+  @apply border-panel-border bg-background-a60 text-muted-foreground flex shrink-0 items-center gap-3.5 border-t px-3.5 py-2 text-xs;
+  @apply max-md:hidden;
+
+  kbd {
+    @apply border-border bg-label-surface rounded-md border px-1.5 py-px font-mono text-xs;
+  }
+
+  .cmdk-hint {
+    @apply flex items-center gap-1.5;
+  }
+
+  .cmdk-hint-close {
+    @apply ml-auto;
+  }
+}

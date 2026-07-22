@@ -198,7 +198,7 @@ return baseclass.extend({
 
     this.renderSidebarNav(branch, branchUrl);
     this.renderBreadcrumb(branch, branchUrl);
-    this.initSearch(branch, branchUrl);
+    this.initPalette(branch, branchUrl);
 
     const tab = document.getElementById("tabmenu");
     if (tab) {
@@ -388,99 +388,65 @@ return baseclass.extend({
   },
 
   /**
-   * Topbar route search (C1): persistent input in the card header (markup
-   * lives in header.ut), results dropdown built here on demand. The index
-   * is the same two-level navigation model the sidebar renders from — no
-   * extra requests. ⌘K / Ctrl+K focuses the input globally; <md a toggle
-   * button turns the topbar into a full-width search bar instead.
-   * The theme ships no translations of its own — it reuses existing LuCI
-   * msgids (see header.ut for the search chrome's i18n specifics).
+   * Command palette (⌘K), replaces the C1 topbar route search. One panel
+   * serves navigation (the same two-level model the sidebar renders, plus
+   * the logout leaf) and theme-mode commands — the only UI able to return
+   * to 'device' once the header toggle has written an explicit mode.
+   * DOM is built lazily on first open; page load binds one trigger click
+   * and one keydown listener.
+   * The theme ships no translations of its own — all palette strings are
+   * existing LuCI msgids, except Light/Dark which have no msgid anywhere
+   * in LuCI (dark variants ship as separate theme packages, and package
+   * names are untranslated): they stay English literals wrapped in _().
    */
-  initSearch(branch, branchUrl) {
-    const wrap = document.getElementById("topbar-search");
-    const input = document.getElementById("topbar-search-input");
-    const pop = document.getElementById("topbar-search-pop");
-    if (!wrap || !input || !pop || this.searchIndex) return;
+  initPalette(branch, branchUrl) {
+    const trigger = document.getElementById("cmdk-trigger");
+    if (!trigger || this.palIndex) return;
 
-    this.searchIndex = [];
+    this.palIndex = [];
     ui.menu.getChildren(branch).forEach((section) => {
-      if (this._isLogoutMenuItem(section)) return;
       const subs = ui.menu.getChildren(section);
       if (subs.length === 0) {
-        this.searchIndex.push({
+        this.palIndex.push({
           title: _(section.title),
-          name: section.name,
           group: null,
           icon: section.name,
+          path: `${branchUrl}/${section.name}`,
           href: L.url(branchUrl, section.name),
+          isLogout: this._isLogoutMenuItem(section),
         });
         return;
       }
       subs.forEach((page) => {
-        this.searchIndex.push({
+        this.palIndex.push({
           title: _(page.title),
-          name: page.name,
           group: _(section.title),
           icon: section.name,
+          path: `${branchUrl}/${section.name}/${page.name}`,
           href: L.url(branchUrl, section.name, page.name),
+          isLogout: false,
         });
       });
     });
 
-    this.searchWrap = wrap;
-    this.searchInput = input;
-    this.searchPop = pop;
-    this.searchOpenBtn = document.getElementById("topbar-search-open");
+    this.palModes = [
+      { mode: "light", title: _("Light"), iconFile: "sun" },
+      { mode: "dark", title: _("Dark"), iconFile: "moon" },
+      { mode: "device", title: _("Automatic"), iconFile: "monitor" },
+    ];
 
     const isMac = /Mac|iP(ad|hone|od)/.test(navigator.platform);
-    const keyEl = wrap.querySelector(".topbar-search-key");
+    const keyEl = trigger.querySelector(".cmdk-trigger-key");
     if (keyEl) {
       keyEl.textContent = isMac ? "⌘K" : "Ctrl+K";
       keyEl.hidden = false;
     }
-    input.setAttribute("aria-keyshortcuts", isMac ? "Meta+K" : "Control+K");
-
-    input.addEventListener("input", () =>
-      this.renderSearchResults(input.value),
-    );
-    // Refocusing a non-empty input brings its dropdown back.
-    input.addEventListener("focus", () =>
-      this.renderSearchResults(input.value),
-    );
-    input.addEventListener("keydown", (e) => {
-      // Mid-composition these keys belong to the IME: Enter commits the
-      // buffer (navigating away for pinyin users) and arrows move inside
-      // the candidate list, not the results.
-      if (e.isComposing || e.keyCode === 229) return;
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault();
-        // A desktop Escape hides the dropdown but keeps its rows — arrows
-        // reopen it instead of moving an invisible selection.
-        if (pop.hidden) this.renderSearchResults(input.value);
-        else this.moveSearchSelection(e.key === "ArrowDown" ? 1 : -1);
-      } else if (e.key === "Enter" && !pop.hidden) {
-        pop.querySelector(".is-selected")?.click();
-      }
-    });
-
-    // mousemove, not mouseover: scrollIntoView() slides rows under a
-    // stationary pointer, which fires mouseover and would snap the
-    // selection back to whatever the mouse happens to rest on.
-    pop.addEventListener("mousemove", (e) => {
-      const row = e.target?.closest?.(".topbar-search-result");
-      if (row && !row.classList.contains("is-selected"))
-        this.setSearchSelection(row);
-    });
-
-    if (this.searchOpenBtn)
-      this.searchOpenBtn.addEventListener("click", () => this.openSearch());
-    const cancel = document.getElementById("topbar-search-cancel");
-    if (cancel) cancel.addEventListener("click", () => this.closeSearch());
+    trigger.setAttribute("aria-keyshortcuts", isMac ? "Meta+K" : "Control+K");
+    trigger.addEventListener("click", () => this.openPalette());
 
     document.addEventListener("keydown", (e) => {
-      // An IME swallows these keys while composing (Esc cancels the
-      // composition, not the dropdown); keyCode 229 covers engines that
-      // don't set isComposing on the trailing keydown.
+      // An IME swallows these keys while composing; keyCode 229 covers
+      // engines that don't set isComposing on the trailing keydown.
       if (e.isComposing || e.keyCode === 229) return;
       // Only the advertised shortcut — ⌘K on Mac, Ctrl+K elsewhere — so
       // macOS Ctrl+K (kill-to-end-of-line in text fields) keeps working.
@@ -491,139 +457,295 @@ return baseclass.extend({
         (e.key || "").toLowerCase() === "k"
       ) {
         e.preventDefault();
-        this.openSearch();
-      } else if (e.key === "Escape") {
-        this.closeSearch();
+        if (this.palOverlay && !this.palOverlay.hidden) this.closePalette();
+        else this.openPalette();
+      } else if (
+        e.key === "Escape" &&
+        this.palOverlay &&
+        !this.palOverlay.hidden
+      ) {
+        this.closePalette();
+      }
+    });
+  },
+
+  openPalette() {
+    if (!this.palOverlay) this._buildPalette();
+    this.palOverlay.hidden = false;
+    this._renderPalette();
+    this.palInput.focus();
+    this.palInput.select();
+  },
+
+  closePalette() {
+    if (!this.palOverlay || this.palOverlay.hidden) return;
+    this.palOverlay.hidden = true;
+    this.palInput.value = "";
+    // Hand focus back so a ⌘K → esc round-trip doesn't strand the caret.
+    document.getElementById("cmdk-trigger")?.focus();
+  },
+
+  _buildPalette() {
+    this.palInput = E("input", {
+      class: "cmdk-input",
+      type: "text",
+      placeholder: _("Type to filter…"),
+      autocomplete: "off",
+      spellcheck: "false",
+      enterkeyhint: "go",
+    });
+    this.palInput.addEventListener("input", () => this._renderPalette());
+    this.palInput.addEventListener("keydown", (e) => {
+      // Mid-composition these keys belong to the IME: Enter commits the
+      // buffer and arrows move inside the candidate list.
+      if (e.isComposing || e.keyCode === 229) return;
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        this._palMove(e.key === "ArrowDown" ? 1 : -1);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        this.palList.querySelector(".is-selected")?.click();
       }
     });
 
-    // Clicking/tapping outside dismisses the dropdown (desktop only — the
-    // mobile takeover has no outside and exits via Cancel/Escape).
-    document.addEventListener("pointerdown", (e) => {
-      if (
-        !pop.hidden &&
-        document.body.getAttribute("data-topbar-search") !== "open" &&
-        !wrap.contains(e.target)
-      )
-        pop.hidden = true;
+    const clear = E("button", {
+      class: "cmdk-clear",
+      type: "button",
+      "aria-label": _("Clear"),
     });
-  },
+    clear.addEventListener("click", () => {
+      this.palInput.value = "";
+      this._renderPalette();
+      this.palInput.focus();
+    });
 
-  openSearch() {
-    // The mobile entry button is only displayed <md — its visibility says
-    // whether the takeover applies without hard-coding the breakpoint.
-    if (this.searchOpenBtn && this.searchOpenBtn.offsetParent !== null) {
-      document.body.setAttribute("data-topbar-search", "open");
-      // Full-screen surface: the (possibly empty) results panel covers the
-      // page immediately, before the first keystroke.
-      this.renderSearchResults(this.searchInput.value);
-    }
-    this.searchInput.focus();
-    this.searchInput.select();
-  },
+    const cancel = E("button", { class: "cmdk-cancel", type: "button" }, [
+      _("Cancel"),
+    ]);
+    cancel.addEventListener("click", () => this.closePalette());
 
-  closeSearch() {
-    if (document.body.getAttribute("data-topbar-search") === "open") {
-      // Mobile takeover dismissal resets like a dialog close.
-      document.body.removeAttribute("data-topbar-search");
-      this.searchInput.value = "";
-      this.searchPop.hidden = true;
-      this.searchPop.replaceChildren();
-      this.searchInput.blur();
-      return;
-    }
-    // Desktop Escape only hides the dropdown; text stays for refinement.
-    if (!this.searchPop.hidden) this.searchPop.hidden = true;
-  },
+    this.palList = E("div", {
+      class: "cmdk-list",
+      "aria-label": _("Navigation"),
+    });
+    // mousemove, not mouseover: scrollIntoView() slides rows under a
+    // stationary pointer, which fires mouseover and would snap the
+    // selection back to whatever the mouse happens to rest on.
+    this.palList.addEventListener("mousemove", (e) => {
+      const row = e.target?.closest?.(".cmdk-row");
+      if (row && !row.classList.contains("is-selected")) this._palSelect(row);
+    });
 
-  renderSearchResults(value) {
-    const q = value.trim().toLowerCase();
-    if (!q) {
-      // Quiet until typed (Spotlight manner) — except during the mobile
-      // takeover, where the empty panel stays up as the page cover.
-      this.searchPop.replaceChildren();
-      this.searchPop.hidden =
-        document.body.getAttribute("data-topbar-search") !== "open";
-      return;
-    }
+    const footer = E("div", { class: "cmdk-footer" }, [
+      E("span", { class: "cmdk-hint" }, [
+        E("kbd", {}, ["↑"]),
+        E("kbd", {}, ["↓"]),
+        _("Select"),
+      ]),
+      E("span", { class: "cmdk-hint" }, [E("kbd", {}, ["↵"]), _("OK")]),
+      E("span", { class: "cmdk-hint" }, [E("kbd", {}, [">"]), _("Command")]),
+      E("span", { class: "cmdk-hint cmdk-hint-close" }, [
+        E("kbd", {}, ["esc"]),
+        _("Close"),
+      ]),
+    ]);
 
-    const matches = this.searchIndex.filter(
-      (page) =>
-        page.title.toLowerCase().includes(q) ||
-        page.name.toLowerCase().includes(q) ||
-        page.group?.toLowerCase().includes(q),
+    const panel = E(
+      "div",
+      {
+        class: "cmdk-panel",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": _("Navigation"),
+      },
+      [
+        E("div", { class: "cmdk-inputrow" }, [
+          this.palInput,
+          clear,
+          E("kbd", { class: "cmdk-esc" }, ["esc"]),
+          cancel,
+        ]),
+        this.palList,
+        footer,
+      ],
     );
 
-    const rows = matches.length
-      ? matches.map((page, i) =>
-          E(
-            "a",
-            {
-              class: `topbar-search-result${i ? "" : " is-selected"}`,
-              href: page.href,
-            },
-            [
-              this._sectionIcon(page.icon, 15),
-              page.group
-                ? E(
-                    "span",
-                    { class: "result-group" },
-                    this.highlightSearchMatch(page.group, q),
-                  )
-                : "",
-              page.group ? E("span", { class: "result-sep" }, ["›"]) : "",
-              E(
-                "span",
-                { class: "result-title" },
-                this.highlightSearchMatch(page.title, q),
-              ),
-              E("kbd", { class: "result-enter" }, ["↵"]),
-            ],
-          ),
-        )
-      : [
-          E("div", { class: "topbar-search-empty" }, [
-            _("No entries available"),
-          ]),
-        ];
-
-    this.searchPop.replaceChildren(
-      E("div", { class: "topbar-search-list" }, rows),
-    );
-    this.searchPop.hidden = false;
+    this.palOverlay = E("div", { id: "cmdk-overlay", hidden: "" }, [panel]);
+    this.palOverlay.addEventListener("pointerdown", (e) => {
+      if (e.target === this.palOverlay) this.closePalette();
+    });
+    document.body.appendChild(this.palOverlay);
   },
 
-  highlightSearchMatch(title, q) {
-    const lower = title.toLowerCase();
+  _renderPalette() {
+    const trimmed = this.palInput.value.trimStart();
+    const cmdOnly = trimmed.startsWith(">");
+    const q = (cmdOnly ? trimmed.slice(1) : trimmed).trim().toLowerCase();
+    const themeNow = localStorage.getItem("shadcn.theme") || "device";
+
+    let rows;
+    if (q) {
+      const hits = [];
+      if (!cmdOnly) {
+        this.palIndex.forEach((page) => {
+          const m = this._palScore(q, page.title, page.path);
+          if (m)
+            hits.push({
+              score: m.score,
+              node: this._palPageRow(page, m.ranges),
+            });
+        });
+      }
+      this.palModes.forEach((cmd) => {
+        const m = this._palScore(q, cmd.title, `theme ${cmd.mode}`);
+        if (m)
+          hits.push({
+            score: m.score,
+            node: this._palModeRow(cmd, themeNow, m.ranges),
+          });
+      });
+      hits.sort((a, b) => b.score - a.score);
+      rows = hits.map((h) => h.node);
+    } else {
+      rows = [];
+      if (!cmdOnly) {
+        rows.push(E("div", { class: "cmdk-group" }, [_("Navigation")]));
+        this.palIndex.forEach((page) =>
+          rows.push(this._palPageRow(page, null)),
+        );
+      }
+      rows.push(E("div", { class: "cmdk-group" }, [_("Design")]));
+      this.palModes.forEach((cmd) =>
+        rows.push(this._palModeRow(cmd, themeNow, null)),
+      );
+    }
+
+    if (!rows.length)
+      rows = [E("div", { class: "cmdk-empty" }, [_("No entries available")])];
+
+    this.palList.replaceChildren(...rows);
+    this.palList.scrollTop = 0;
+    this.palList.querySelector(".cmdk-row")?.classList.add("is-selected");
+  },
+
+  _palPageRow(page, ranges) {
+    // Hierarchy reads left→right like the breadcrumb: 一级 › 二级. Group
+    // names are uniformly short, so titles align into a clean column.
+    const row = E("a", { class: "cmdk-row", href: page.href }, [
+      this._sectionIcon(page.icon, 15),
+      page.group ? E("span", { class: "cmdk-group-name" }, [page.group]) : "",
+      page.group ? E("span", { class: "cmdk-sep" }, ["›"]) : "",
+      E("span", { class: "cmdk-title" }, this._palMark(page.title, ranges)),
+      E("span", { class: "cmdk-right" }, [
+        // The dispatch path anchors the row's right edge with real,
+        // language-neutral data (Quick-Open manner) instead of dead space.
+        E("code", { class: "cmdk-path" }, [page.path]),
+        E("kbd", { class: "cmdk-enter" }, ["↵"]),
+      ]),
+    ]);
+    if (page.isLogout)
+      row.addEventListener("click", () => {
+        // Same contract as header.ut's delegated a.sidebar-logout listener:
+        // logging out drops the cached sidebar and suppresses re-caching.
+        window.shadcnSuppressSidebarCache = true;
+        try {
+          sessionStorage.removeItem("shadcn.sidebar.cache");
+        } catch (e) {}
+      });
+    return row;
+  },
+
+  _palModeRow(cmd, themeNow, ranges) {
+    const active = themeNow === cmd.mode;
+    const row = E(
+      "button",
+      { class: "cmdk-row cmdk-cmd", type: "button", "data-mode": cmd.mode },
+      [
+        this._iconFile(cmd.iconFile, 15),
+        E("span", { class: "cmdk-title" }, this._palMark(cmd.title, ranges)),
+        E("span", { class: "cmdk-right" }, [
+          active
+            ? E("span", { class: "cmdk-check", "aria-hidden": "true" })
+            : E("kbd", { class: "cmdk-enter" }, ["↵"]),
+        ]),
+      ],
+    );
+    row.addEventListener("click", () => {
+      window.ShadcnSidebar?.applyTheme?.(cmd.mode);
+      // Palette stays open: the ✓ moves and the skin flips live. The list
+      // is rebuilt, so re-select this command — the selection must not
+      // snap back to the first row after an Enter.
+      this._renderPalette();
+      const again = this.palList.querySelector(
+        `.cmdk-row[data-mode="${cmd.mode}"]`,
+      );
+      if (again) this._palSelect(again);
+    });
+    return row;
+  },
+
+  /**
+   * Subsequence scorer: every query char must appear in order; consecutive
+   * runs and word/segment starts weigh extra. Title hits rank above path
+   * hits and carry highlight ranges; path hits rank without highlighting.
+   */
+  _palScore(q, title, path) {
+    const t = this._palSub(q, title.toLowerCase());
+    if (t) return { score: t.score + 10, ranges: t.ranges };
+    const p = this._palSub(q, String(path || "").toLowerCase());
+    return p ? { score: p.score, ranges: null } : null;
+  },
+
+  _palSub(q, low) {
+    let ti = 0;
+    let score = 0;
+    let run = 0;
+    const ranges = [];
+    for (let qi = 0; qi < q.length; qi++) {
+      const c = q[qi];
+      if (c === " ") {
+        run = 0;
+        continue;
+      }
+      const at = low.indexOf(c, ti);
+      if (at < 0) return null;
+      run = at === ti && qi > 0 ? run + 1 : 1;
+      score +=
+        run + (at === 0 || low[at - 1] === " " || low[at - 1] === "/" ? 3 : 0);
+      if (ranges.length && ranges[ranges.length - 1][1] === at)
+        ranges[ranges.length - 1][1] = at + 1;
+      else ranges.push([at, at + 1]);
+      ti = at + 1;
+    }
+    return { score: score - low.length * 0.02, ranges };
+  },
+
+  _palMark(title, ranges) {
     // Case folding can change string length ("İ" → "i̇"), skewing offsets
     // into the original — skip highlighting rather than mis-slice.
-    const at = lower.length === title.length ? lower.indexOf(q) : -1;
-    if (at < 0) return [title];
-
-    return [
-      title.slice(0, at),
-      E("mark", {}, [title.slice(at, at + q.length)]),
-      title.slice(at + q.length),
-    ];
+    if (!ranges || title.toLowerCase().length !== title.length) return [title];
+    const out = [];
+    let last = 0;
+    ranges.forEach(([a, b]) => {
+      if (a > last) out.push(title.slice(last, a));
+      out.push(E("mark", {}, [title.slice(a, b)]));
+      last = b;
+    });
+    if (last < title.length) out.push(title.slice(last));
+    return out;
   },
 
-  setSearchSelection(row) {
-    this.searchPop
-      .querySelector(".is-selected")
-      ?.classList.remove("is-selected");
+  _palSelect(row) {
+    this.palList.querySelector(".is-selected")?.classList.remove("is-selected");
     row.classList.add("is-selected");
   },
 
-  moveSearchSelection(delta) {
-    const rows = [...this.searchPop.querySelectorAll(".topbar-search-result")];
+  _palMove(delta) {
+    const rows = [...this.palList.querySelectorAll(".cmdk-row")];
     if (!rows.length) return;
-
-    const current = rows.findIndex((row) =>
-      row.classList.contains("is-selected"),
-    );
+    const current = rows.findIndex((r) => r.classList.contains("is-selected"));
     const next = rows[(current + delta + rows.length) % rows.length];
-
-    this.setSearchSelection(next);
+    this._palSelect(next);
     next.scrollIntoView({ block: "nearest" });
   },
 

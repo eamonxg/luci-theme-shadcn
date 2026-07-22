@@ -173,33 +173,23 @@
 						<nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="{{ _('Breadcrumb') }}"></nav>
 					</div>
 					<div class="card-header-right">
-						{#- Route search (C1): persistent input, dropdown built by menu-shadcn.js.
-						    The theme ships no translations of its own. 'Cancel'/'Navigation'/
-						    'No entries available' are luci-base msgids; 'Type to filter…' is
-						    luci-app-package-manager's, so it shows English where that app is
-						    absent — kept for the better wording where it does translate. -#}
-						<div class="topbar-search" id="topbar-search">
-							<button
-								id="topbar-search-open"
-								class="topbar-icon-btn topbar-search-open"
-								type="button"
-								aria-label="{{ _('Type to filter…') }}"
-							></button>
-							<div class="topbar-search-box">
-								<input
-									id="topbar-search-input"
-									class="topbar-search-input"
-									type="text"
-									placeholder="{{ _('Type to filter…') }}"
-									aria-label="{{ _('Type to filter…') }}"
-									autocomplete="off"
-									spellcheck="false"
-								>
-								<kbd class="topbar-search-key" hidden></kbd>
-								<button id="topbar-search-cancel" class="topbar-search-cancel" type="button">{{ _('Cancel') }}</button>
-							</div>
-							<div id="topbar-search-pop" class="topbar-search-pop" aria-label="{{ _('Navigation') }}" hidden></div>
-						</div>
+						{#- Command palette (⌘K): trigger only — the panel is built lazily
+						    by menu-shadcn.js. The theme ships no translations of its own.
+						    'Search' (several app pots, e.g. adblock) and the panel's
+						    'Type to filter…' (package-manager) show English where those
+						    apps are absent — kept for the better wording where they do
+						    translate; every other palette string is a luci-base msgid
+						    ('Navigation'/'Design'/'Automatic'/'Select'/'OK'/'Command'/
+						    'Close'/'Cancel'/'Clear'/'No entries available'). -#}
+						<button
+							id="cmdk-trigger"
+							class="cmdk-trigger"
+							type="button"
+							aria-label="{{ _('Search') }}"
+						>
+							<span class="cmdk-trigger-label">{{ _('Search') }}</span>
+							<kbd class="cmdk-trigger-key" hidden></kbd>
+						</button>
 						<div id="indicators" class="topbar-indicators"></div>
 						<button
 							id="theme-toggle-btn"
