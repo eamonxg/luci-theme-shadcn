@@ -35,36 +35,74 @@
   - **Safari 16.4+** _(2023 年 3 月发布)_
   - **Firefox 128+** _(2024 年 7 月发布)_
 
-## 安装预编译包
+## 安装
+
+以下命令均在路由器本机执行（例如通过 SSH 会话）。
+
+### 通过 eamonxg 软件源
 
 OpenWrt 25.12+ 及 Snapshot 版本使用 `apk`；旧版本使用 `opkg`。
 
 > **提示**：运行 `opkg --version` 或 `apk --version`，有输出的那个就是您设备的包管理器。
 
-- **opkg** (OpenWrt < 25.12)：
+```sh
+wget -qO- https://openwrt.eamonxg.fun/install.sh | sh
+```
+
+- **opkg**（OpenWrt < 25.12）：
 
   ```sh
-  cd /tmp && uclient-fetch -O luci-theme-shadcn.ipk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn_0.3.0-r20260711_all.ipk && opkg install luci-theme-shadcn.ipk
+  opkg install luci-theme-shadcn
   ```
 
-- **apk** (OpenWrt 25.12+ 及 snapshots)：
+- **apk**（OpenWrt 25.12+ 及 snapshots）：
 
   ```sh
-  cd /tmp && uclient-fetch -O luci-theme-shadcn.apk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn-0.3.0-r20260711.apk && apk add --allow-untrusted luci-theme-shadcn.apk
+  apk add luci-theme-shadcn
   ```
+
+一次性添加源，之后更新只需 `opkg update && opkg install luci-theme-shadcn` / `apk update && apk add luci-theme-shadcn`，无需再手动下载安装包。详细信息见 [openwrt.eamonxg.fun](https://openwrt.eamonxg.fun/)。
+
+### 通过 GitHub Release
+
+```sh
+cd /tmp
+
+# opkg
+uclient-fetch -O luci-theme-shadcn.ipk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn_0.3.0-r20260711_all.ipk
+opkg install luci-theme-shadcn.ipk
+
+# apk
+uclient-fetch -O luci-theme-shadcn.apk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn-0.3.0-r20260711.apk
+apk add --allow-untrusted luci-theme-shadcn.apk
+```
 
 ## 从源码构建
 
 使用 OpenWrt 构建系统自行编译。主机前置条件见 [Build system setup](https://openwrt.org/docs/guide-developer/toolchain/install-buildsystem)。产物位于 `bin/packages/<arch>/base/`（例如 `bin/packages/x86_64/base/luci-theme-shadcn_*_all.ipk`），拷贝到路由器后按上文方式安装即可。
 
-### 通过 OpenWrt buildroot
+### 通过完整源码或 SDK
+
+准备环境——克隆完整源码：
 
 ```sh
-# 克隆 OpenWrt——openwrt-24.10 分支构建 .ipk，main 分支构建 .apk
+# 完整源码——openwrt-24.10 分支构建 .ipk，main 分支构建 .apk
 git clone https://github.com/openwrt/openwrt.git
 cd openwrt
-git checkout openwrt-24.10       # 省略则停留在 main（snapshot → .apk）
+git checkout openwrt-24.10
+```
 
+或 [预编译 SDK](https://openwrt.org/docs/guide-developer/toolchain/using_the_sdk)（更快，省去编译工具链）。从 [downloads.openwrt.org](https://downloads.openwrt.org) 下载与目标匹配的压缩包，下载页面按 Release 和 Snapshot 分类——Release 24.10.x 及以下构建 `.ipk`；Release 25.12+ 和 Snapshot 构建 `.apk`（文件名、架构、压缩格式因目标而异）：
+
+```sh
+wget <从 downloads.openwrt.org 获取的 SDK 压缩包地址>
+tar -xf openwrt-sdk-*.tar.*
+cd openwrt-sdk-*/
+```
+
+然后在该目录下：
+
+```sh
 # 加入本软件包并安装 feeds（提供 luci-base）
 git clone https://github.com/eamonxg/luci-theme-shadcn.git package/luci-theme-shadcn
 ./scripts/feeds update -a
@@ -73,23 +111,10 @@ git clone https://github.com/eamonxg/luci-theme-shadcn.git package/luci-theme-sh
 # 在 menuconfig 中勾选主题：LuCI → Themes → luci-theme-shadcn
 make menuconfig
 
-# 先编译主机工具与工具链，再编译本软件包
+# 用 SDK 时跳过这两行——它已自带编译好的工具链
 make tools/install -j$(nproc)
 make toolchain/install -j$(nproc)
-make package/luci-theme-shadcn/compile -j$(nproc) V=s
-```
 
-### 通过预编译 SDK（更快）
-
-[OpenWrt SDK](https://openwrt.org/docs/guide-developer/toolchain/using_the_sdk) 自带预编译工具链，可省去 `tools/install` / `toolchain/install` 步骤。从 [downloads.openwrt.org](https://downloads.openwrt.org) 下载与目标匹配的 SDK（release SDK 构建 `.ipk`，snapshot SDK 构建 `.apk`）并解压，然后在 SDK 目录中执行：
-
-```sh
-git clone https://github.com/eamonxg/luci-theme-shadcn.git package/luci-theme-shadcn
-./scripts/feeds update -a
-./scripts/feeds install -a
-
-# 在 menuconfig 中勾选主题：LuCI → Themes → luci-theme-shadcn
-make menuconfig
 make package/luci-theme-shadcn/compile -j$(nproc) V=s
 ```
 
