@@ -103,6 +103,12 @@
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
   --radius-base: 0.5rem;
+
+  /* Elevation. Emitted on :root (not just inlined into the shadow-* utilities)
+     so on-demand patches/*.css -- standalone entries that carry no Tailwind
+     helper output -- can reach it as var(--shadow-sm). */
+  --shadow-sm:
+    0 1px 3px 0 oklch(0% 0 0 / 0.1), 0 1px 2px -1px oklch(0% 0 0 / 0.1);
 }
 
 [data-darkmode="true"] {
@@ -301,6 +307,8 @@
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+
+  --shadow-sm: var(--shadow-sm);
 
   /* Radius ladder driven by a single knob; at 0.5rem it matches the
      Tailwind default scale (rounded-lg = 0.5rem). Tune --radius-base

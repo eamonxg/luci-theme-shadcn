@@ -6,6 +6,26 @@
 #file-manager-container {
   overflow: auto;
 
+  /* Themed scrollbar: _base.css lists only the theme's own scroll containers,
+     so an app-owned one opts in here (see the note there). */
+  scrollbar-color: var(--foreground-a30) transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--foreground-a30);
+    border-radius: 9999px;
+  }
+
   #status-bar {
     background-color: var(--background);
     border: 0;

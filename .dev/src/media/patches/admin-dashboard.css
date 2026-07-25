@@ -13,9 +13,7 @@
 
 .Dashboard > .section-content .dashboard-bg:not(.tr) {
   border: 1px solid var(--panel-border);
-  box-shadow:
-    0 1px 3px 0 #0000001a,
-    0 1px 2px -1px #0000001a;
+  box-shadow: var(--shadow-sm);
 }
 
 .Dashboard

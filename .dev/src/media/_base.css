@@ -1,5 +1,12 @@
 /* Only known scroll containers need themed scrollbars. Applying these rules to
-   every descendant makes selector matching scale with the whole LuCI page. */
+   every descendant makes selector matching scale with the whole LuCI page.
+
+   This list covers the theme's own scroll containers plus LuCI core markup —
+   a third-party app's own scroll container is not styled here. `scrollbar-color`
+   and `scrollbar-width` inherit from `html`, so such a container still picks up
+   the theme's colours wherever those properties are supported; only the 8px
+   `::-webkit-scrollbar` shape is missed. An app that needs the full treatment
+   adds its container to `patches/<page>.css` — see the file-manager patch. */
 :where(
   html,
   .sidebar-nav,
@@ -11,7 +18,6 @@
   #modal_overlay > .modal pre,
   .cbi-tabmenu,
   .tabs,
-  #file-manager-container,
   textarea
 ) {
   scrollbar-color: var(--foreground-a30) transparent;
