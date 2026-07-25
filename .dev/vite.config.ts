@@ -5,9 +5,10 @@
 
 import tailwindcss from "@tailwindcss/vite";
 import { exec } from "child_process";
-import { existsSync, readdirSync } from "fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "fs";
 import { mkdir, readdir, readFile, writeFile } from "fs/promises";
-import { basename, dirname, join, relative, resolve } from "path";
+import type { IncomingMessage, ServerResponse } from "http";
+import { basename, dirname, join, relative, resolve, sep } from "path";
 import { minify as terserMinify } from "terser";
 import { promisify } from "util";
 import {
@@ -163,6 +164,423 @@ function createLocalServePlugin(): Plugin {
         server.ws.send({ type: "full-reload", path: "*" });
         return [];
       }
+    },
+  };
+}
+
+// Mock pages: render saved LuCI page snapshots against the live theme, so a
+// third-party app's page can be styled without the app (or a device) installed.
+// Snapshots live in .dev/mocks/*.html and are served at /mocks/<name>.html
+// with the Vite HMR client injected, so theme edits (main.css, components,
+// patches/*.css, served JS) trigger the existing full-reload in handleHotUpdate.
+// Any third-party asset a snapshot needs (the app's own css/js) goes under
+// .dev/mocks/static/ mirroring its /luci-static/… URL and is served as-is
+// (no HMR). Served snapshots additionally get
+// scripts/mock-nav.client.js (links between captured pages navigate in place,
+// plus a floating switcher), and proxied device pages get
+// scripts/mock-capture.client.js (hotkey → POST /mocks/__save captures the
+// open page as a snapshot). See "Mock Pages" in the repo-root CLAUDE.md.
+const MOCK_ROUTE = "/mocks";
+const MOCKS_DIR = resolve(CURRENT_DIR, "mocks");
+const MOCKS_STATIC_DIR = join(MOCKS_DIR, "static");
+const MOCK_NAV_CLIENT = resolve(CURRENT_DIR, "scripts/mock-nav.client.js");
+const MOCK_CAPTURE_CLIENT = resolve(
+  CURRENT_DIR,
+  "scripts/mock-capture.client.js",
+);
+// A captured LuCI page is tens of KB — anything past this is not a page.
+const MOCK_SAVE_LIMIT = 20 * 1024 * 1024;
+
+const MOCK_MIME: Record<string, string> = {
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+  ".map": "application/json; charset=utf-8",
+};
+
+function mockContentType(file: string): string {
+  const ext = file.slice(file.lastIndexOf("."));
+  return MOCK_MIME[ext] ?? "application/octet-stream";
+}
+
+// document.documentElement.outerHTML (the documented manual capture) drops the
+// doctype; without one the browser renders the mock in quirks mode and layout
+// no longer matches the real page. Every serve and save path funnels through
+// this.
+function ensureDoctype(html: string): string {
+  return /^\s*<!doctype/i.test(html) ? html : `<!doctype html>\n${html}`;
+}
+
+const escapeHtml = (s: string): string =>
+  s.replace(
+    /[&<>"]/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!,
+  );
+
+// Inject the Vite HMR client so a served snapshot joins the WS channel and
+// receives handleHotUpdate's full-reload broadcast on any theme source change.
+function injectHmrClient(html: string): string {
+  if (html.includes("/@vite/client")) return html;
+  const tag = `\n    <script type="module" src="/@vite/client"></script>\n`;
+  return html.includes("</head>")
+    ? html.replace("</head>", `${tag}  </head>`)
+    : tag + html;
+}
+
+// A snapshot is static DOM. Left alone, LuCI's runtime (luci.js + the inline
+// `new LuCI(...)` bootstrap) boots, polls the backend, gets 403 (no session)
+// and pops the "Session expired" modal. Neutralise it for mock rendering:
+// strip the scripts that phone home (luci.js/cbi.js/xhr.js and /cgi-bin/
+// endpoints) and pre-define a no-op `L`/`LuCI`/`XHR` stub so the remaining
+// inline bootstraps (`new LuCI(...)`, `L.require(...)`, legacy `XHR.poll(...)`)
+// run harmlessly. Theme CSS/JS and the theme's own inline scripts (dark mode,
+// toolbar) are untouched; framework-dependent theme JS such as menu-aurora
+// simply no-ops — the captured DOM is already fully rendered, so a static
+// review still looks right.
+const MOCK_RUNTIME_GUARD = `<script>
+    (function () {
+      var stub = new Proxy(function () {}, {
+        get: function () { return stub; },
+        apply: function () { return stub; },
+        construct: function () { return stub; },
+      });
+      window.L = stub;
+      window.LuCI = stub;
+      window.XHR = stub;
+    })();
+    </script>`;
+
+function neutralizeLuciRuntime(html: string): string {
+  const stripped = html.replace(
+    /<script\b[^>]*\bsrc="[^"]*(?:\/luci-static\/resources\/(?:luci|cbi|xhr)\.js|\/cgi-bin\/)[^"]*"[^>]*>\s*<\/script>/gi,
+    "",
+  );
+  return stripped.includes("</head>")
+    ? stripped.replace(
+        /<head\b[^>]*>/i,
+        (m) => `${m}\n    ${MOCK_RUNTIME_GUARD}`,
+      )
+    : MOCK_RUNTIME_GUARD + stripped;
+}
+
+// Snapshot inventory for the index and for in-mock navigation. A snapshot's
+// identity is its <body data-page> (filenames are free), so each file is
+// scanned for it once and re-read only when its mtime changes.
+interface MockEntry {
+  file: string;
+  page: string | null;
+  mtimeMs: number;
+}
+const mockMeta = new Map<string, { mtimeMs: number; page: string | null }>();
+
+function listMocks(): MockEntry[] {
+  if (!existsSync(MOCKS_DIR)) return [];
+  return readdirSync(MOCKS_DIR, { withFileTypes: true })
+    .filter((d) => d.isFile() && d.name.endsWith(".html"))
+    .map((d) => {
+      const path = join(MOCKS_DIR, d.name);
+      const mtimeMs = statSync(path).mtimeMs;
+      let meta = mockMeta.get(d.name);
+      if (!meta || meta.mtimeMs !== mtimeMs) {
+        const page = readFileSync(path, "utf-8").match(
+          /<body\b[^>]*\bdata-page="([^"]*)"/i,
+        )?.[1];
+        meta = { mtimeMs, page: page || null };
+        mockMeta.set(d.name, meta);
+      }
+      return { file: d.name, page: meta.page, mtimeMs };
+    })
+    .sort((a, b) => a.file.localeCompare(b.file));
+}
+
+// Handing the snapshot list to the page lets mock-nav.client.js take over the
+// snapshot's own /cgi-bin/luci/ links (jump to the matching mock instead of
+// falling through to the proxied router) and render the floating switcher.
+function injectMockNav(html: string, current: string): string {
+  const payload = JSON.stringify({
+    current,
+    mocks: listMocks().map(({ file, page }) => ({ file, page })),
+  }).replace(/</g, "\\u003c");
+  const tags =
+    `<script>window.__SHADCN_MOCKS__ = ${payload};</script>\n` +
+    `    <script defer src="${MOCK_ROUTE}/__nav.js"></script>\n  `;
+  return html.includes("</head>")
+    ? html.replace("</head>", `${tags}</head>`)
+    : html + tags;
+}
+
+function readRequestBody(req: IncomingMessage, limit: number): Promise<string> {
+  return new Promise((resolveBody, reject) => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    req.on("data", (chunk: Buffer) => {
+      size += chunk.length;
+      if (size > limit) {
+        reject(Object.assign(new Error("body too large"), { statusCode: 413 }));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("end", () => resolveBody(Buffer.concat(chunks).toString("utf-8")));
+    req.on("error", reject);
+  });
+}
+
+function relTime(mtimeMs: number): string {
+  const mins = Math.round((Date.now() - mtimeMs) / 60000);
+  if (mins < 60) return `${Math.max(mins, 0)}m`;
+  if (mins < 60 * 24) return `${Math.round(mins / 60)}h`;
+  return `${Math.round(mins / (60 * 24))}d`;
+}
+
+function renderMockIndex(entries: MockEntry[]): string {
+  const rows = entries.length
+    ? entries
+        .map((e) => {
+          const meta = [e.page ?? "no data-page", relTime(e.mtimeMs)]
+            .map(escapeHtml)
+            .join(" · ");
+          return (
+            `<li><a href="${MOCK_ROUTE}/${encodeURIComponent(e.file)}">` +
+            `${escapeHtml(e.file)}<span class="meta">${meta}</span></a></li>`
+          );
+        })
+        .join("\n      ")
+    : `<li class="empty">No snapshots yet — open a page through the dev proxy and press <code>Alt/Option+Shift+S</code>, or drop a page's HTML into <code>.dev/mocks/</code></li>`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Shadcn mock pages</title>
+  <style>
+    body{font:15px/1.6 system-ui,-apple-system,sans-serif;max-width:680px;margin:48px auto;padding:0 20px;color:#1a1a1a}
+    h1{font-size:20px;margin:0 0 4px}
+    p.sub{color:#888;font-size:13px;margin:0 0 24px}
+    ul{list-style:none;padding:0;margin:0}
+    li{margin:8px 0}
+    li a{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:8px 14px;border:1px solid #d0d0d0;border-radius:8px;text-decoration:none;color:#0a7d4b;font-weight:500}
+    li a .meta{color:#888;font-size:12px;font-weight:400;white-space:nowrap}
+    li a:hover{background:#f5f5f5}
+    li.empty{color:#888}
+    code{background:#f0f0f0;padding:1px 6px;border-radius:4px;font-size:13px}
+    @media(prefers-color-scheme:dark){body{background:#111;color:#eee}li a{border-color:#333;color:#4ade80}li a:hover{background:#1c1c1c}code{background:#222}}
+  </style>
+</head>
+<body>
+  <h1>Shadcn mock pages</h1>
+  <p class="sub">Saved snapshots served against the live theme. Edit theme CSS/JS → the open page hot-reloads; links between captured pages navigate in place.</p>
+  <ul>
+      ${rows}
+  </ul>
+</body>
+</html>`;
+}
+
+function createMockPlugin(): Plugin {
+  const sendJson = (res: ServerResponse, status: number, body: unknown) => {
+    res.statusCode = status;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify(body));
+  };
+  // Each missing mock asset gets one terminal hint, not one per reload.
+  const mockMissLogged = new Set<string>();
+
+  return {
+    name: "mock-pages-plugin",
+    apply: "serve",
+    enforce: "pre",
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url) return next();
+        const [pathname] = req.url.split("?");
+        const inMocks =
+          pathname === MOCK_ROUTE || pathname.startsWith(`${MOCK_ROUTE}/`);
+        if (!inMocks && !pathname.startsWith("/luci-static/")) return next();
+
+        // Every branch answers inside this try: a stray request (malformed
+        // %-encoding, a directory named *.html, …) must degrade to an error
+        // response — thrown, it becomes an unhandled rejection and takes the
+        // whole dev server down with it.
+        try {
+          // Dev-helper client scripts (kept as real files for editability).
+          if (
+            pathname === `${MOCK_ROUTE}/__nav.js` ||
+            pathname === `${MOCK_ROUTE}/__capture.js`
+          ) {
+            const file = pathname.endsWith("/__nav.js")
+              ? MOCK_NAV_CLIENT
+              : MOCK_CAPTURE_CLIENT;
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "text/javascript; charset=utf-8");
+            res.setHeader("Cache-Control", "no-store");
+            res.end(await readFile(file, "utf-8"));
+            return;
+          }
+
+          // Capture endpoint, written to by mock-capture.client.js from
+          // proxied device pages. The custom header doubles as a CORS gate: a
+          // foreign origin can't send it without a preflight this server never
+          // approves, so drive-by cross-site POSTs are rejected.
+          if (pathname === `${MOCK_ROUTE}/__save`) {
+            if (req.method !== "POST")
+              return sendJson(res, 405, { error: "POST only" });
+            if (req.headers["x-shadcn-capture"] !== "1")
+              return sendJson(res, 403, { error: "missing capture header" });
+            const html = (await readRequestBody(req, MOCK_SAVE_LIMIT))
+              // The live DOM carries the dev-only tags this server injected;
+              // a snapshot must stay a clean capture of the real page.
+              .replace(
+                /<script[^>]*\bsrc="(?:\/@vite\/client|\/mocks\/__capture\.js)"[^>]*>\s*<\/script>\s*/gi,
+                "",
+              );
+            const page =
+              html.match(/<body\b[^>]*\bdata-page="([^"]*)"/i)?.[1] ?? "";
+            const safe = page.replace(/[^\w.-]/g, "-").replace(/^\.+/, "");
+            const name = `${safe.slice(0, 120) || `snapshot-${Date.now()}`}.html`;
+            await mkdir(MOCKS_DIR, { recursive: true });
+            await writeFile(
+              join(MOCKS_DIR, name),
+              ensureDoctype(html),
+              "utf-8",
+            );
+            console.log(
+              `${tag("Mocks")} captured ${name}${page ? ` (${page})` : ""}`,
+            );
+            return sendJson(res, 200, { file: name, page: page || null });
+          }
+
+          // Index of available snapshots.
+          if (pathname === MOCK_ROUTE || pathname === `${MOCK_ROUTE}/`) {
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "text/html; charset=utf-8");
+            res.setHeader("Cache-Control", "no-store");
+            res.end(renderMockIndex(listMocks()));
+            return;
+          }
+
+          // A single snapshot: LuCI runtime neutralised, HMR client + in-mock
+          // navigation injected, doctype restored.
+          if (inMocks && pathname.endsWith(".html")) {
+            const name = basename(decodeURIComponent(pathname));
+            const file = resolve(MOCKS_DIR, name);
+            if (
+              !file.startsWith(MOCKS_DIR + sep) ||
+              !existsSync(file) ||
+              !statSync(file).isFile()
+            ) {
+              res.statusCode = 404;
+              res.setHeader("Content-Type", "text/html; charset=utf-8");
+              res.end(
+                `<!doctype html><meta charset="utf-8"><p>Mock not found: ${escapeHtml(name)} — <a href="${MOCK_ROUTE}/">back to index</a>`,
+              );
+              return;
+            }
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "text/html; charset=utf-8");
+            res.setHeader("Cache-Control", "no-store");
+            const snapshot = await readFile(file, "utf-8");
+            res.end(
+              ensureDoctype(
+                injectMockNav(
+                  injectHmrClient(neutralizeLuciRuntime(snapshot)),
+                  name,
+                ),
+              ),
+            );
+            return;
+          }
+
+          // Third-party static drop-ins the snapshot references (the app's own
+          // css/js) — reached only when local-serve didn't already claim the
+          // path.
+          if (pathname.startsWith("/luci-static/")) {
+            const file = resolve(
+              MOCKS_STATIC_DIR,
+              decodeURIComponent(pathname.slice(1)),
+            );
+            if (
+              file.startsWith(MOCKS_STATIC_DIR + sep) &&
+              existsSync(file) &&
+              statSync(file).isFile()
+            ) {
+              res.statusCode = 200;
+              res.setHeader("Content-Type", mockContentType(file));
+              res.setHeader("Cache-Control", "no-store");
+              res.end(await readFile(file));
+              return;
+            }
+            // A miss requested BY a mock page must fail fast, not fall
+            // through to the device proxy: with no reachable router the
+            // request just hangs, pinning the tab's load event for minutes
+            // (device-only assets like a custom logo hit this). Real proxied
+            // pages keep their normal fallthrough.
+            const referer = req.headers.referer ?? "";
+            if (
+              new URL(referer, "http://_").pathname.startsWith(`${MOCK_ROUTE}/`)
+            ) {
+              if (!mockMissLogged.has(pathname)) {
+                mockMissLogged.add(pathname);
+                console.log(
+                  `${tag("Mocks")} miss ${pathname} → 404 (mirror it at .dev/mocks/static${pathname} to serve it)`,
+                );
+              }
+              res.statusCode = 404;
+              res.setHeader("Cache-Control", "no-store");
+              res.end();
+              return;
+            }
+
+            // Whatever else reaches here on /luci-static/ is destined for the
+            // device proxy. Static files answer in milliseconds on a real
+            // router, so bound the wait: CSS-initiated requests (nav icons)
+            // carry the stylesheet's URL as referer and dodge the mock 404
+            // above — with no reachable device they would otherwise pin the
+            // tab's load event for minutes. Vite's proxy error handler
+            // tolerates an already-ended response, and /cgi-bin is untouched
+            // (dynamic endpoints can be legitimately slow).
+            const deadline = setTimeout(() => {
+              if (!res.headersSent && res.writable) {
+                console.log(
+                  `${tag("Proxy")} ${pathname} → 504 after 5s (router unreachable?)`,
+                );
+                res.statusCode = 504;
+                res.end();
+              }
+            }, 5000);
+            res.on("close", () => clearTimeout(deadline));
+          }
+
+          next();
+        } catch (err: any) {
+          const status =
+            err?.statusCode ?? (err instanceof URIError ? 400 : 500);
+          console.error(`${tag("Mocks")} ${req.url}: ${err?.message ?? err}`);
+          if (res.headersSent) {
+            res.destroy();
+            return;
+          }
+          if (pathname === `${MOCK_ROUTE}/__save`) {
+            sendJson(res, status, { error: String(err?.message ?? err) });
+          } else {
+            res.statusCode = status;
+            res.setHeader("Content-Type", "text/plain; charset=utf-8");
+            res.end(status === 400 ? "Bad request" : "Mock route error");
+          }
+        }
+      });
     },
   };
 }
@@ -356,6 +774,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       createRedirectPlugin(),
       createLocalServePlugin(),
+      createMockPlugin(),
       createUtSyncPlugin(OPENWRT_SSH_HOST),
       createLuciJsCompressPlugin(),
     ],
@@ -422,6 +841,16 @@ export default defineConfig(({ mode }) => {
                   !html.includes("/@vite/client")
                 ) {
                   html = html.replace("</head>", `${client}\n\t</head>`);
+                }
+                // Real device pages also get the mock-capture helper:
+                // Alt/Option+Shift+S → POST /mocks/__save stores the open
+                // page as a snapshot for the /mocks/ workflow.
+                const capture = `<script defer src="${MOCK_ROUTE}/__capture.js"></script>`;
+                if (
+                  html.includes("</head>") &&
+                  !html.includes("/__capture.js")
+                ) {
+                  html = html.replace("</head>", `${capture}\n\t</head>`);
                 }
                 const { "transfer-encoding": _, ...headers } = proxyRes.headers;
                 res.writeHead(status, {

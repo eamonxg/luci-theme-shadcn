@@ -17,3 +17,6 @@
 .superpowers/
 docs/superpowers/
 .dev/prototypes/
+
+# Local page snapshots for the dev /mocks/ route — see "Mock Pages" in CLAUDE.md
+/.dev/mocks/

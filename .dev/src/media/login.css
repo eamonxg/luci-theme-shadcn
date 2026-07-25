@@ -6,9 +6,14 @@
 
 @import "tailwindcss";
 @import "tw-animate-css";
+
 @import "./inter.css";
 @import "./_tokens.css";
 @import "./_shared.css";
+
+/* See main.css: keep dev-only tooling out of Tailwind's source detection. */
+@source not "../../vite.config.ts";
+@source not "../../scripts/*.client.js";
 
 @custom-variant dark (&:where([data-darkmode=true], [data-darkmode=true] *));
 
