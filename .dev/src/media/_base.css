@@ -1,9 +1,40 @@
-*:not(html) {
-  @apply scrollbar-thumb-rounded-full scrollbar-thumb-foreground-a30 scrollbar-thin scrollbar-track-transparent;
+/* Only known scroll containers need themed scrollbars. Applying these rules to
+   every descendant makes selector matching scale with the whole LuCI page. */
+:where(
+  html,
+  .sidebar-nav,
+  #maincontent,
+  .cmdk-list,
+  .cbi-dropdown > ul.dropdown,
+  #modal_overlay,
+  #modal_overlay > .modal > ul,
+  #modal_overlay > .modal pre,
+  .cbi-tabmenu,
+  .tabs,
+  #file-manager-container,
+  textarea
+) {
+  scrollbar-color: var(--foreground-a30) transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--foreground-a30);
+    border-radius: 9999px;
+  }
 }
 
 html {
-  @apply bg-background text-foreground scrollbar-thumb-rounded-full scrollbar-thumb-foreground-a30 scrollbar-thin scrollbar-track-transparent font-sans text-sm;
+  @apply bg-background text-foreground font-sans text-sm;
 
   body {
     /* flex-wrap: third parties append stray children to <body> (OpenClash
