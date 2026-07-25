@@ -1,10 +1,10 @@
 /*
   PATCH: admin-statistics-graphs (luci-app-statistics)
   Loaded on-demand by header.ut only when data-page matches this filename.
-  @reference makes @apply / theme utilities resolvable without re-emitting main.css.
+  Native declarations keep this standalone patch free of Tailwind helper output.
 */
-@reference "../main.css";
-
-[data-page="admin-statistics-graphs"] [data-plugin] img {
-  @apply dark:hue-rotate-150 dark:invert;
+[data-page="admin-statistics-graphs"]
+  [data-plugin]
+  img:where([data-darkmode="true"], [data-darkmode="true"] *) {
+  filter: hue-rotate(150deg) invert(1);
 }
