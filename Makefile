@@ -9,7 +9,7 @@ LUCI_TITLE:=A modern sidebar LuCI theme for OpenWrt, built with shadcn/ui design
 LUCI_DEPENDS:=+luci-base
 
 PKG_VERSION:=0.3.4
-PKG_RELEASE:=20260723
+PKG_RELEASE:=20260726
 PKG_LICENSE:=Apache-2.0
 
 LUCI_MINIFY_CSS:=

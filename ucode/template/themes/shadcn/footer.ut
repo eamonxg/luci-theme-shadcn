@@ -10,11 +10,9 @@
 
     <script>
       window.ShadcnSidebar = null;
-      document.addEventListener('shadcn-sidebar-ready', function () {
-        L.require('sidebar-shadcn').then(function (m) {
-          window.ShadcnSidebar = m;
-        });
-      }, { once: true });
+      L.require('sidebar-shadcn').then(function (m) {
+        window.ShadcnSidebar = m;
+      });
       L.require('menu-shadcn');
     </script>
     {% endif %}

@@ -18,10 +18,6 @@
 
 @custom-variant dark (&:where([data-darkmode=true], [data-darkmode=true] *));
 
-@plugin "tailwind-scrollbar" {
-  nocompatible: true;
-}
-
 @import "./_base.css";
 @import "./_layout.css";
 @import "./components/_button.css";

@@ -5,7 +5,6 @@
  */
 
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @import "./inter.css";
 @import "./_tokens.css";
@@ -26,7 +25,6 @@ html {
 @keyframes fadeSlideIn {
   to {
     opacity: 1;
-    filter: blur(0px);
     transform: translateY(0px);
   }
 }
@@ -34,23 +32,20 @@ html {
 @keyframes slideRightIn {
   to {
     opacity: 1;
-    filter: blur(0px);
     transform: translateX(0px);
   }
 }
 
 .animate-element {
   opacity: 0;
-  filter: blur(4px);
   transform: translateY(8px);
-  animation: fadeSlideIn 0.5s ease forwards;
+  animation: fadeSlideIn 0.35s ease-out forwards;
 }
 
 .animate-slide-right {
   opacity: 0;
-  filter: blur(4px);
   transform: translateX(24px);
-  animation: slideRightIn 0.6s ease forwards;
+  animation: slideRightIn 0.4s ease-out forwards;
 }
 
 .animate-delay-100 {
@@ -65,11 +60,14 @@ html {
 .animate-delay-400 {
   animation-delay: 0.4s;
 }
-.animate-delay-500 {
-  animation-delay: 0.5s;
-}
-.animate-delay-600 {
-  animation-delay: 0.6s;
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-element,
+  .animate-slide-right {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
 }
 
 /* ── Layout ── */

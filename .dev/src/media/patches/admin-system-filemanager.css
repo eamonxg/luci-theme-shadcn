@@ -1,14 +1,33 @@
 /*
   PATCH: admin-system-filemanager (luci-app-filemanager)
   Loaded on-demand by header.ut only when data-page matches this filename.
-  @reference makes @apply / theme utilities resolvable without re-emitting main.css.
+  Native declarations keep this standalone patch free of Tailwind helper output.
 */
-@reference "../main.css";
-
 #file-manager-container {
-  @apply overflow-auto;
+  overflow: auto;
+
+  /* Themed scrollbar: _base.css lists only the theme's own scroll containers,
+     so an app-owned one opts in here (see the note there). */
+  scrollbar-color: var(--foreground-a30) transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--foreground-a30);
+    border-radius: 9999px;
+  }
 
   #status-bar {
-    @apply bg-background border-0;
+    background-color: var(--background);
+    border: 0;
   }
 }

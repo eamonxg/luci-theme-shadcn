@@ -1,12 +1,11 @@
 /*
   PATCH: admin-services-openclash-config (luci-app-openclash)
   Loaded on-demand by header.ut only when data-page matches this filename.
-  @reference makes @apply / theme utilities resolvable without re-emitting main.css.
+  Native declarations keep this standalone patch free of Tailwind helper output.
 */
-@reference "../main.css";
-
 [data-page="admin-services-openclash-config"] {
   .sub_div img {
-    @apply h-5 w-5;
+    width: 1.25rem;
+    height: 1.25rem;
   }
 }

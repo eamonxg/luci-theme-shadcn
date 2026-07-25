@@ -6,6 +6,23 @@ const SIDEBAR_KEY = "shadcn.sidebar";
 
 return baseclass.extend({
   __init__() {
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar?.getAttribute("data-shadcn-built") === "1") {
+      this._start();
+      return;
+    }
+
+    document.addEventListener("shadcn-sidebar-ready", () => this._start(), {
+      once: true,
+    });
+  },
+
+  _start() {
+    if (this._started) return;
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar?.getAttribute("data-shadcn-built") !== "1") return;
+    this._started = true;
+
     this.initTheme();
     this.initSidebar();
     this.initMobileDrawer();
