@@ -42,7 +42,7 @@ const lightA = alphaTokens(light);
 const darkA = alphaTokens(dark);
 
 const STRUCTURE = `
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
   --radius-base: 0.5rem;
 `;

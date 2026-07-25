@@ -754,7 +754,7 @@ function createRedirectPlugin(): Plugin {
   };
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, CURRENT_DIR);
   // VITE_OPENWRT_HOST is just the router address — a bare IP/hostname like
   // 192.168.1.1 (host:port and http:// URL forms also work). The web proxy
@@ -770,6 +770,9 @@ export default defineConfig(({ mode }) => {
   const DEV_PORT = Number(env.VITE_DEV_PORT) || 5173;
 
   return {
+    // Production assets are installed below /luci-static/. Keep the dev base
+    // at / so the proxy and injected Vite client retain their existing URLs.
+    base: command === "build" ? "/luci-static/" : "/",
     plugins: [
       tailwindcss(),
       createRedirectPlugin(),
