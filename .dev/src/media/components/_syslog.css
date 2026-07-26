@@ -1,0 +1,109 @@
+/*
+  Log viewer for the core System/Kernel Log pages (admin/status/logs/*).
+
+  This is theme styling for a stock LuCI page, so it lives in the main.css
+  component pipeline — NOT in patches/ — written in the component convention
+  (@apply over the theme's utility map). patches/ stays reserved for
+  third-party compatibility, written in plain CSS.
+
+  The class names are deliberately global, not page-scoped: any package may
+  reuse the same markup contract for its own log UI — .syslog-view wrapping
+  .log-row rows built from .log-time / .log-sev / .log-tag / .log-msg spans,
+  with an lv-{info|notice|warn|err|crit|debug} severity class on the row —
+  and inherit this component wholesale.
+
+  The companion JS ships on-demand as patches/admin-status-logs.js. It
+  parses the read-only #syslog textarea into a .syslog-view sibling on the
+  theme's always-dark phosphor terminal and marks #content_syslog with
+  .log-enhanced. Without JS (or when its parse gate trips) none of the
+  viewer markup exists and the stock textarea styling from _layout.css
+  still applies. Kernel-log lines carry no severity on any LuCI version,
+  so only the time/tag/typography rules apply on that page.
+*/
+
+#content_syslog.log-enhanced > #syslog {
+  @apply hidden;
+}
+
+.syslog-view {
+  /* Direct child of #content_syslog: undo its filter-row `> div` flex rule.
+     Same always-dark shell as the stock textarea (_layout.css #syslog);
+     whole lines scroll sideways (the textarea's wrap="off" model). */
+  @apply bg-terminal-bg text-terminal-fg border-border block w-full overflow-x-auto rounded-lg border px-2 py-4 font-mono text-xs leading-[1.7];
+
+  & .log-row {
+    /* Inline flow + real spaces (not flex/grid) so selection copies clean
+       text; max-content width so hover/tint backgrounds span the scrolled
+       width. */
+    @apply w-max min-w-full rounded px-2 whitespace-pre;
+
+    &:hover {
+      @apply bg-terminal-hover;
+    }
+  }
+
+  /* The browser-default selection highlight reads poorly on the dark bed. */
+  & ::selection {
+    @apply bg-info-a40;
+  }
+
+  & .log-time {
+    @apply opacity-55;
+  }
+
+  & .log-sev {
+    @apply font-semibold tracking-[0.02em] uppercase;
+  }
+
+  & .log-tag {
+    @apply opacity-80;
+  }
+
+  & .log-time,
+  & .log-sev,
+  & .log-tag {
+    @apply md:inline-block md:overflow-hidden md:align-bottom md:whitespace-nowrap;
+  }
+
+  & .log-time {
+    @apply md:w-[15ch];
+  }
+
+  & .log-sev {
+    @apply md:w-[7ch];
+  }
+
+  & .log-tag {
+    @apply md:max-w-[18ch] md:text-ellipsis;
+  }
+
+  & .lv-info .log-sev {
+    @apply text-info;
+  }
+
+  & .lv-notice .log-sev {
+    @apply text-success;
+  }
+
+  & .lv-warn .log-sev {
+    @apply text-warning;
+  }
+
+  & .lv-debug {
+    @apply opacity-50;
+  }
+
+  /* err and above are rare and load-bearing — full-row emphasis. */
+  & .lv-err,
+  & .lv-crit {
+    @apply bg-destructive-a20;
+
+    &:hover {
+      @apply bg-destructive-a30;
+    }
+
+    & .log-sev {
+      @apply text-destructive;
+    }
+  }
+}

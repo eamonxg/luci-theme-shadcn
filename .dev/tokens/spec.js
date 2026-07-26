@@ -27,6 +27,9 @@ const common = {
   info_fg: ["const", "oklch(1 0 0)"],
   warning_fg: ["const", "oklch(0.20 0.05 75)"],
   terminal_foreground: ["const", "oklch(0.85 0.08 155)"],
+  // Row-hover veil for the always-dark log terminal (patches/admin-status-*):
+  // foreground-based alphas flip with the mode and vanish on the fixed bed.
+  terminal_hover: ["alpha", "terminal_foreground", 0.06],
   // Shared derived
   muted_foreground: ["mix", "text", "bg", 0.57],
   secondary_foreground: ["mix", "text", "bg", 0.85],

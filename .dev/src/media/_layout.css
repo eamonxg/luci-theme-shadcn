@@ -408,7 +408,9 @@ span[data-indicator] {
   }
 
   #syslog {
-    @apply bg-terminal-bg text-terminal-fg rounded-lg border p-4;
+    /* Explicit border color: bare `border` falls back to currentColor
+       (the phosphor foreground) in Tailwind v4. */
+    @apply bg-terminal-bg text-terminal-fg border-border rounded-lg border p-4;
   }
 
   #content_syslog {

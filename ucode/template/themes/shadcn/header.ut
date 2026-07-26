@@ -15,15 +15,19 @@
 	const page_segs = length(ctx?.request_path) ? ctx.request_path : (ctx?.path || []);
 	const page = join('-', page_segs);
 	// On-demand patches — see "On-demand patches" in CLAUDE.md.
-	let patch_files = [];
+	let patch_files = [], patch_scripts = [];
 	if (!blank_page) {
 		let seg_prefixes = {}, acc = null;
 		for (let seg in page_segs)
 			seg_prefixes[acc = (acc == null ? seg : `${acc}-${seg}`)] = true;
-		for (let f in lsdir(`/www${media}/patches`) ?? [])
+		for (let f in lsdir(`/www${media}/patches`) ?? []) {
 			if (substr(f, -4) == '.css' && exists(seg_prefixes, substr(f, 0, -4)))
 				push(patch_files, substr(f, 0, -4));
+			else if (substr(f, -3) == '.js' && exists(seg_prefixes, substr(f, 0, -3)))
+				push(patch_scripts, substr(f, 0, -3));
+		}
 		sort(patch_files);
+		sort(patch_scripts);
 	}
 
 	http.prepare_content('text/html; charset=UTF-8');
@@ -58,6 +62,9 @@
 		<link rel="stylesheet" href="{{ media }}/main.css">
 		{% for (let patch in patch_files): %}
 		<link rel="stylesheet" href="{{ media }}/patches/{{ patch }}.css">
+		{% endfor %}
+		{% for (let patch in patch_scripts): %}
+		<script defer src="{{ media }}/patches/{{ patch }}.js"></script>
 		{% endfor %}
 		{% endif %}
 		<link rel="icon" href="{{ media }}/images/favicon.svg" type="image/svg+xml">

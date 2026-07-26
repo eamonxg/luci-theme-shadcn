@@ -37,6 +37,7 @@
   --info-fg: oklch(100% 0 0);
   --warning-fg: oklch(20% 0.05 75);
   --terminal-foreground: oklch(85% 0.08 155);
+  --terminal-hover: oklch(85% 0.08 155 / 0.06);
   --muted-foreground: oklch(52.62% 0.0131 275);
   --secondary-foreground: oklch(30.08% 0.0176 275);
   --sidebar-muted: oklch(52.62% 0.0131 275);
@@ -143,6 +144,7 @@
   --info-fg: oklch(100% 0 0);
   --warning-fg: oklch(20% 0.05 75);
   --terminal-foreground: oklch(85% 0.08 155);
+  --terminal-hover: oklch(85% 0.08 155 / 0.06);
   --muted-foreground: oklch(58.14% 0.0056 264);
   --secondary-foreground: oklch(78.89% 0.0059 264);
   --sidebar-muted: oklch(58.14% 0.0056 264);
@@ -239,6 +241,7 @@
   --color-info-fg: var(--info-fg);
   --color-warning-fg: var(--warning-fg);
   --color-terminal-foreground: var(--terminal-foreground);
+  --color-terminal-hover: var(--terminal-hover);
   --color-muted-foreground: var(--muted-foreground);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-sidebar-muted: var(--sidebar-muted);

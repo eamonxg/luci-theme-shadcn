@@ -50,9 +50,24 @@ function createLuciJsCompressPlugin(): Plugin {
               mangle: { toplevel: false },
               format: { comments: false, beautify: false },
             });
-            const outputPath = join(outDir, "resources", normalized);
-            await mkdir(dirname(outputPath), { recursive: true });
-            await writeFile(outputPath, compressed.code || sourceCode, "utf-8");
+            // patches/* are payloads of the on-demand patches mechanism and
+            // ship next to the CSS patches (media dir), not under resources/.
+            const stem = normalized.startsWith("patches/")
+              ? normalized.slice("patches/".length, -".js".length)
+              : null;
+            const outputPaths = stem
+              ? [stem, ...(PATCH_ALIASES[stem] ?? [])].map((p) =>
+                  join(outDir, "shadcn", "patches", `${p}.js`),
+                )
+              : [join(outDir, "resources", normalized)];
+            for (const outputPath of outputPaths) {
+              await mkdir(dirname(outputPath), { recursive: true });
+              await writeFile(
+                outputPath,
+                compressed.code || sourceCode,
+                "utf-8",
+              );
+            }
           } catch (error: any) {
             console.error(
               `${tag("JS Compress")} src/resource/${normalized}: ${error?.message}`,
@@ -72,6 +87,27 @@ function createLuciJsCompressPlugin(): Plugin {
 const PATCH_PUBLIC_PREFIX = "/luci-static/shadcn/patches/";
 const PATCH_SRC_DIR = resolve(CURRENT_DIR, "src/media/patches");
 
+// JS payloads of the same on-demand mechanism: src/resource/patches/<page>.js
+// builds to shadcn/patches/<page>.js so header.ut's single lsdir() discovers
+// CSS and JS patches together.
+const JS_PATCH_SRC_DIR = resolve(CURRENT_DIR, "src/resource/patches");
+
+// A built payload (CSS or JS) can serve several pages via aliases, keyed by
+// source stem. Prefix matching is per-page, and naming one file after a
+// shorter shared prefix (e.g. `admin-status`) would load it on every status
+// subpage — including the busiest overview page — so the built output is
+// duplicated under each alias instead. Two identical CSS *entries* would not
+// work either: Rollup deduplicates same-content assets into a single file.
+// Currently empty: the log viewer needs only admin-status-logs — every
+// supported release (23.05/24.10/master) mounts both log pages under
+// admin/status/logs/*, so the prefix covers System Log, Kernel Log and the
+// bare /logs alias with one name.
+const PATCH_ALIASES: Record<string, string[]> = {};
+const patchAliasSource = (stem: string): string | undefined =>
+  Object.entries(PATCH_ALIASES).find(([, aliases]) =>
+    aliases.includes(stem),
+  )?.[0];
+
 // Theme icons: rewrite /luci-static/shadcn/icons/<name>.svg to the publicDir
 // copy so icons added in this checkout resolve in dev. Without this the
 // request falls through to the OpenWrt proxy, whose installed package may
@@ -79,6 +115,30 @@ const PATCH_SRC_DIR = resolve(CURRENT_DIR, "src/media/patches");
 // rewritten — anything else still proxies through.
 const ICON_PUBLIC_PREFIX = "/luci-static/shadcn/icons/";
 const ICON_SRC_DIR = resolve(CURRENT_DIR, "public/shadcn/icons");
+
+/* Duplicate built CSS patches under their PATCH_ALIASES names (JS aliases are
+   handled inside the compress plugin). Runs post-bundle because the sources
+   are Rollup entries. */
+function createPatchAliasPlugin(): Plugin {
+  return {
+    name: "patch-alias",
+    apply: "build",
+    enforce: "post",
+    async closeBundle() {
+      for (const [stem, aliases] of Object.entries(PATCH_ALIASES)) {
+        const source = resolve(BUILD_OUTPUT, `shadcn/patches/${stem}.css`);
+        if (!existsSync(source)) continue;
+        const css = await readFile(source, "utf-8");
+        for (const alias of aliases)
+          await writeFile(
+            resolve(BUILD_OUTPUT, `shadcn/patches/${alias}.css`),
+            css,
+            "utf-8",
+          );
+      }
+    },
+  };
+}
 
 function createLocalServePlugin(): Plugin {
   const cssRoutes: Record<string, string> = {
@@ -118,11 +178,42 @@ function createLocalServePlugin(): Plugin {
           pathname.startsWith(PATCH_PUBLIC_PREFIX) &&
           pathname.endsWith(".css")
         ) {
-          const file = basename(pathname);
-          if (existsSync(join(PATCH_SRC_DIR, file))) {
+          // Aliases resolve to their shared source, mirroring the build-time
+          // duplication.
+          const stem = basename(pathname, ".css");
+          const source = existsSync(join(PATCH_SRC_DIR, `${stem}.css`))
+            ? stem
+            : patchAliasSource(stem);
+          if (source && existsSync(join(PATCH_SRC_DIR, `${source}.css`))) {
             req.url =
-              `/src/media/patches/${file}` + (search ? `?${search}` : "");
+              `/src/media/patches/${source}.css` + (search ? `?${search}` : "");
             return next();
+          }
+        }
+        if (
+          pathname.startsWith(PATCH_PUBLIC_PREFIX) &&
+          pathname.endsWith(".js")
+        ) {
+          const stem = basename(pathname, ".js");
+          const source = existsSync(join(JS_PATCH_SRC_DIR, `${stem}.js`))
+            ? stem
+            : patchAliasSource(stem);
+          if (source && existsSync(join(JS_PATCH_SRC_DIR, `${source}.js`))) {
+            try {
+              const code = await readFile(
+                join(JS_PATCH_SRC_DIR, `${source}.js`),
+                "utf-8",
+              );
+              res.setHeader("Content-Type", "text/javascript");
+              res.setHeader("Cache-Control", "no-store");
+              res.statusCode = 200;
+              res.end(code);
+              return;
+            } catch (err: any) {
+              console.error(
+                `${tag("Serve")} ${pathname} → cannot read patches/${source}.js: ${err?.message ?? err}`,
+              );
+            }
           }
         }
         if (
@@ -157,7 +248,10 @@ function createLocalServePlugin(): Plugin {
       const nf = file.replace(/\\/g, "/");
       const isThemeCss =
         nf.startsWith(MEDIA_SRC_DIR + "/") && nf.endsWith(".css");
-      if (isThemeCss || reloadJsFiles.has(nf)) {
+      const isJsPatch =
+        nf.startsWith(JS_PATCH_SRC_DIR.replace(/\\/g, "/") + "/") &&
+        nf.endsWith(".js");
+      if (isThemeCss || isJsPatch || reloadJsFiles.has(nf)) {
         console.log(
           `${tag("Serve")} ${relative(CURRENT_DIR, file)} → full reload`,
         );
@@ -246,7 +340,7 @@ function injectHmrClient(html: string): string {
 // endpoints) and pre-define a no-op `L`/`LuCI`/`XHR` stub so the remaining
 // inline bootstraps (`new LuCI(...)`, `L.require(...)`, legacy `XHR.poll(...)`)
 // run harmlessly. Theme CSS/JS and the theme's own inline scripts (dark mode,
-// toolbar) are untouched; framework-dependent theme JS such as menu-aurora
+// toolbar) are untouched; framework-dependent theme JS such as menu-shadcn
 // simply no-ops — the captured DOM is already fully rendered, so a static
 // review still looks right.
 const MOCK_RUNTIME_GUARD = `<script>
@@ -780,6 +874,7 @@ export default defineConfig(({ mode, command }) => {
       createMockPlugin(),
       createUtSyncPlugin(OPENWRT_SSH_HOST),
       createLuciJsCompressPlugin(),
+      createPatchAliasPlugin(),
     ],
     build: {
       outDir: BUILD_OUTPUT,
@@ -792,9 +887,11 @@ export default defineConfig(({ mode, command }) => {
           // On-demand third-party patches: one entry per page, output to
           // shadcn/patches/<page>.css (the `patches/` key prefix lands them there
           // via assetFileNames below). header.ut links the matching one per page.
+          // `_`-prefixed files are shared partials @imported by entries, not
+          // entries themselves (they'd otherwise ship as never-matching patches).
           ...Object.fromEntries(
             (existsSync(PATCH_SRC_DIR) ? readdirSync(PATCH_SRC_DIR) : [])
-              .filter((f) => f.endsWith(".css"))
+              .filter((f) => f.endsWith(".css") && !f.startsWith("_"))
               .map((f) => [
                 `patches/${f.slice(0, -4)}`,
                 join(PATCH_SRC_DIR, f),
