@@ -433,9 +433,14 @@ return baseclass.extend({
       });
     });
 
+    // luci-base carries no mode msgids, so the labels borrow
+    // luci-app-aurora-config's already-translated "Light Mode"/"Dark Mode" —
+    // matching its msgids verbatim is what makes the palette follow the UI
+    // language wherever the config app is installed, and they fall back to
+    // English where it isn't.
     this.palModes = [
-      { mode: "light", title: _("Light"), iconFile: "sun" },
-      { mode: "dark", title: _("Dark"), iconFile: "moon" },
+      { mode: "light", title: _("Light Mode"), iconFile: "sun" },
+      { mode: "dark", title: _("Dark Mode"), iconFile: "moon" },
       { mode: "device", title: _("Automatic"), iconFile: "monitor" },
     ];
 
