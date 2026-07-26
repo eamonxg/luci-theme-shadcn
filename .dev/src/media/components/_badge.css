@@ -19,7 +19,7 @@
   @apply border-secondary bg-secondary text-secondary-foreground inline-flex items-center gap-1.5 overflow-visible rounded-md border px-2 py-1 align-middle text-sm leading-normal font-semibold transition-colors duration-200;
 
   &[style*="--zone-color-rgb"] {
-    @apply border-transparent bg-[rgb(var(--zone-color-rgb),.7)]!;
+    @apply border-transparent bg-[rgb(var(--zone-color-rgb),.6)]!;
   }
 
   &.zonebadge-empty {
