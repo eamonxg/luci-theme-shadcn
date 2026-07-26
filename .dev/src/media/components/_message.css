@@ -1,5 +1,7 @@
 .alert-message {
-  @apply bg-muted text-foreground mb-4 rounded-lg border p-4 text-sm;
+  /* Radius matches `.cbi-section`: the alert sits in the content layer, same
+     width and edge alignment as the sections it stacks above. */
+  @apply bg-muted text-foreground mb-4 rounded-xl border p-4 text-sm;
 
   &.modal {
     @apply static;
