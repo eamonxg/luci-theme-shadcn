@@ -114,8 +114,13 @@
   }
 
   /* Kernel log line: `[   73412.882110] msg`. No severity survives into the
-     text on any LuCI version (both eras strip/drop the <N> prefix), so dmesg
-     gets time/tag/typography only — no level colors, no keyword guessing. */
+     text on any LuCI version (master runs `dmesg -r` and strips the <N>
+     prefix after filtering on it; the classic pages never had it), and kernel
+     messages have no uniform tag grammar — drivers print "name addr.dev
+     port:", bare text, indented continuations — which is why upstream renders
+     dmesg as plain unstyled text. A partial tag split styled only some lines
+     and ate only their colons, so the message stays verbatim: time dimming
+     and typography only. */
   function parseDmesgLine(line) {
     const m = line.match(/^\[\s*(\d+\.\d+)\]\s?([\s\S]*)$/);
     if (!m) return null;
@@ -124,7 +129,8 @@
       fullTime: "",
       fac: "",
       sev: "",
-      ...splitTag(m[2]),
+      tag: "",
+      msg: m[2],
     };
   }
 
@@ -209,6 +215,21 @@
     if (!viewer) {
       viewer = document.createElement("div");
       viewer.className = "syslog-view";
+      // The stock textarea contained Ctrl+A for free — a focused form control
+      // is its own selection context. A plain div is not (the standard switch,
+      // user-select:contain, ships in no browser), so reproduce it: clicking
+      // the log focuses the viewer, and select-all inside it stays inside it.
+      viewer.tabIndex = 0;
+      viewer.addEventListener("keydown", function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
+          e.preventDefault();
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          const range = document.createRange();
+          range.selectNodeContents(viewer);
+          sel.addRange(range);
+        }
+      });
       textarea.insertAdjacentElement("afterend", viewer);
       container.classList.add("log-enhanced");
     }
@@ -227,8 +248,21 @@
     if (viewer && selectionInside(viewer)) return;
     lastValue = value;
     const { rows, ratio } = evaluate(value, parseLine);
-    if (ratio >= PARSE_GATE) render(textarea, container, rows);
-    else teardown(container);
+    if (ratio >= PARSE_GATE) {
+      // Tail-follow: a reader already pinned to the bottom stays pinned as new
+      // lines arrive; any other scroll position is never touched. This theme
+      // scrolls #maincontent (an inner overflow-y-auto column, not the
+      // window), and the `viewer &&` guard keeps the first paint from
+      // jumping — same as stock.
+      const scroller = document.getElementById("maincontent");
+      const follow =
+        viewer &&
+        scroller &&
+        scroller.scrollTop + scroller.clientHeight >=
+          scroller.scrollHeight - 40;
+      render(textarea, container, rows);
+      if (follow) scroller.scrollTop = scroller.scrollHeight;
+    } else teardown(container);
   }
 
   // Content updates: LuCI's poll rewrites .value, which fires nothing — a

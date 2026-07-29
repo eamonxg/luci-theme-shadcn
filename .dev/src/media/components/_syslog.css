@@ -30,6 +30,9 @@
      Same always-dark shell as the stock textarea (_layout.css #syslog);
      whole lines scroll sideways (the textarea's wrap="off" model). */
   @apply bg-terminal-bg text-terminal-fg border-border block w-full overflow-x-auto rounded-lg border px-2 py-4 font-mono text-xs leading-[1.7];
+  /* Focusable (tabIndex in the companion JS) so select-all stays inside the
+     log; only keyboard focus draws the ring — a click into the log must not. */
+  @apply focus-visible:ring-ring-a50 outline-none focus-visible:ring-[3px];
 
   & .log-row {
     /* Inline flow + real spaces (not flex/grid) so selection copies clean
