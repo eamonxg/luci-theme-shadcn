@@ -55,29 +55,34 @@
   }
 
   & .log-sev {
-    @apply font-semibold tracking-[0.02em] uppercase;
+    @apply font-semibold;
   }
 
   & .log-tag {
     @apply opacity-80;
   }
 
+  /* min-width columns, not clamps: every token renders verbatim (year,
+     timezone, colons, ctime padding), nothing truncated — a copied row is
+     byte-identical to the source line. */
   & .log-time,
   & .log-sev,
   & .log-tag {
-    @apply md:inline-block md:overflow-hidden md:align-bottom md:whitespace-nowrap;
+    @apply md:inline-block md:align-bottom;
   }
 
   & .log-time {
-    @apply md:w-[15ch];
+    /* ctime stamps are a fixed 24ch; RPC datestrs run longer but uniform. */
+    @apply md:min-w-[24ch];
   }
 
   & .log-sev {
-    @apply md:w-[7ch];
+    /* "authpriv.notice:" is 16ch — the longest real fac.sev token. */
+    @apply md:min-w-[16ch];
   }
 
   & .log-tag {
-    @apply md:max-w-[18ch] md:text-ellipsis;
+    @apply md:min-w-[18ch];
   }
 
   & .lv-info .log-sev {
