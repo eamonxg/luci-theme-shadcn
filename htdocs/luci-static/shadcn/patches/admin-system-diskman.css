@@ -1,0 +1,1 @@
+[data-page^=admin-system-diskman] td[colspan]:has(>div[title]){border-radius:var(--radius-base);flex:0 0 100%;min-width:0;font-size:0;overflow:hidden}[data-page^=admin-system-diskman] td[colspan]>div[title],[data-page^=admin-system-diskman] .tr>div[style*=nowrap]>div[title]{text-overflow:ellipsis;font-size:.75rem;line-height:1.5rem;overflow:hidden}

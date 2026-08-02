@@ -1,0 +1,34 @@
+/*
+  PATCH: admin-system-diskman (luci-app-diskman)
+  Loaded on-demand by header.ut only when data-page matches this filename —
+  the prefix match also covers .../partition/<dev> and .../btrfs/<uuid>.
+  Native declarations keep this standalone patch free of Tailwind helper output.
+*/
+
+[data-page^="admin-system-diskman"] {
+  /* disk_info.htm injects the partition bar as a full-span row whose cell carries
+     an inline white-space:nowrap. Once .tr turns into a flex row on mobile, that
+     cell's automatic minimum size is its min-content — the whole unwrapped bar —
+     so it refuses to shrink and drags the page ~300px wide. Zero the minimum and
+     give the bar its own row. */
+  td[colspan]:has(> div[title]) {
+    flex: 0 0 100%;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--radius-base);
+    /* The segments are inline-blocks sized in percent: any whitespace between
+       them adds a word space on top of the 100% they already sum to. */
+    font-size: 0;
+  }
+
+  /* Each segment is exactly as wide as its share of the disk, but its label does
+     not wrap and spills onto the neighbouring segments. Clip it — the full text
+     stays available through the title attribute. */
+  td[colspan] > div[title],
+  .tr > div[style*="nowrap"] > div[title] {
+    overflow: hidden;
+    font-size: 0.75rem;
+    line-height: 1.5rem;
+    text-overflow: ellipsis;
+  }
+}
