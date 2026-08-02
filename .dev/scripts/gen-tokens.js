@@ -5,18 +5,13 @@
 
 import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import Color from "colorjs.io";
+import { alpha, toOklch } from "@eamonxg/luci-theme-tokens/engine";
+import { block, themeColors } from "@eamonxg/luci-theme-tokens/emit";
 import { resolveMode } from "../tokens/resolve.js";
 import { ALPHAS } from "../tokens/spec.js";
 
-const kebab = (s) => s.replace(/_/g, "-");
 const snake = (s) => s.replace(/-/g, "_");
-
-const withAlpha = (oklchStr, pct) => {
-  const c = new Color(oklchStr).to("oklch");
-  c.alpha = pct / 100;
-  return c.toString({ precision: 4, format: "oklch" });
-};
+const withAlpha = (oklchStr, pct) => toOklch(alpha(oklchStr, pct / 100));
 
 function alphaTokens(resolved) {
   const out = {};
@@ -26,14 +21,6 @@ function alphaTokens(resolved) {
     for (const a of list) out[`${base}-a${a}`] = withAlpha(val, a);
   }
   return out;
-}
-
-function block(selector, ...maps) {
-  const lines = [];
-  for (const m of maps)
-    for (const [k, v] of Object.entries(m))
-      lines.push(`  --${kebab(k)}: ${v};`);
-  return `${selector} {\n${lines.join("\n")}\n`;
 }
 
 const light = resolveMode("light");
@@ -53,9 +40,10 @@ const STRUCTURE = `
     0 1px 3px 0 oklch(0% 0 0 / 0.1), 0 1px 2px -1px oklch(0% 0 0 / 0.1);
 `;
 
-const themeColors = [...Object.keys(light), ...Object.keys(lightA)]
-  .map((k) => `  --color-${kebab(k)}: var(--${kebab(k)});`)
-  .join("\n");
+const themeColorsCss = themeColors([
+  ...Object.keys(light),
+  ...Object.keys(lightA),
+]);
 
 // Add aliases for backward compatibility
 const aliases = [
@@ -64,7 +52,7 @@ const aliases = [
 ].join("\n");
 
 const THEME = `@theme inline {
-${themeColors}
+${themeColorsCss}
 
 ${aliases}
 
