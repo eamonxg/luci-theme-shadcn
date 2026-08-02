@@ -128,10 +128,13 @@
   @apply flex h-full flex-1 flex-col items-center justify-around gap-2;
 
   > div {
-    @apply flex flex-wrap;
+    @apply flex flex-wrap gap-2;
   }
 
+  /* flex-1 alone lets the badges shrink to min-content, so six SSIDs stay
+     crammed on one line instead of wrapping. The floor mirrors
+     luci-theme-bootstrap's min-width: 220px on the same badges. */
   .ifacebadge {
-    @apply flex-1;
+    @apply min-w-55 flex-1;
   }
 }
