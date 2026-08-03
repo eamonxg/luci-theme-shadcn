@@ -41,29 +41,17 @@
 
 ### 通过 eamonxg 软件源
 
-OpenWrt 25.12+ 及 Snapshot 版本使用 `apk`；旧版本使用 `opkg`。
-
-> **提示**：运行 `opkg --version` 或 `apk --version`，有输出的那个就是您设备的包管理器。
-
 ```sh
 wget -qO- https://openwrt.eamonxg.fun/install.sh | sh
 ```
 
-- **opkg**（OpenWrt < 25.12）：
-
-  ```sh
-  opkg install luci-theme-shadcn
-  ```
-
-- **apk**（OpenWrt 25.12+ 及 snapshots）：
-
-  ```sh
-  apk add luci-theme-shadcn
-  ```
-
-一次性添加源，之后更新只需 `opkg update && opkg install luci-theme-shadcn` / `apk update && apk add luci-theme-shadcn`，无需再手动下载安装包。详细信息见 [openwrt.eamonxg.fun](https://openwrt.eamonxg.fun/)。
+这就是全部安装步骤——脚本会添加软件源，并安装您从列表中勾选的软件包。之后用常规命令升级即可：`apk update && apk upgrade luci-theme-shadcn`，或 `opkg update && opkg upgrade luci-theme-shadcn`。详细信息见 [openwrt.eamonxg.fun](https://openwrt.eamonxg.fun/)。
 
 ### 通过 GitHub Release
+
+OpenWrt 25.12+ 及 Snapshot 版本使用 `apk`；旧版本使用 `opkg`。
+
+> **提示**：运行 `opkg --version` 或 `apk --version`，有输出的那个就是您设备的包管理器。
 
 ```sh
 cd /tmp

@@ -41,29 +41,17 @@ Run these commands on the router itself (e.g. over an SSH session).
 
 ### Via the eamonxg package feed
 
-OpenWrt 25.12+ and snapshots use `apk`; older versions use `opkg`.
-
-> **Tip**: Run `opkg --version` or `apk --version` to check which package manager your device has.
-
 ```sh
 wget -qO- https://openwrt.eamonxg.fun/install.sh | sh
 ```
 
-- **opkg** (OpenWrt < 25.12):
-
-  ```sh
-  opkg install luci-theme-shadcn
-  ```
-
-- **apk** (OpenWrt 25.12+ and snapshots):
-
-  ```sh
-  apk add luci-theme-shadcn
-  ```
-
-Adds the feed once; later updates are just `opkg update && opkg install luci-theme-shadcn` / `apk update && apk add luci-theme-shadcn` — no re-downloading the file. Details: [openwrt.eamonxg.fun](https://openwrt.eamonxg.fun/).
+That is the whole installation — the script adds the feed and installs whatever you tick from the list it shows. Upgrade later with the usual commands: `apk update && apk upgrade luci-theme-shadcn`, or `opkg update && opkg upgrade luci-theme-shadcn`. Details: [openwrt.eamonxg.fun](https://openwrt.eamonxg.fun/).
 
 ### Via a GitHub release
+
+OpenWrt 25.12+ and snapshots use `apk`; older versions use `opkg`.
+
+> **Tip**: Run `opkg --version` or `apk --version` to check which package manager your device has.
 
 ```sh
 cd /tmp
