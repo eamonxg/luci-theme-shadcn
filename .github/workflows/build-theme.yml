@@ -37,7 +37,7 @@ jobs:
           release_body_path: shadcn/docs/changelog/${{ github.ref_name }}.md
 
   notify-feed:
-    name: notify openwrt-feed
+    name: notify openwrt-cloud
     runs-on: ubuntu-latest
     needs: build
     if: github.ref_type == 'tag'
@@ -47,14 +47,14 @@ jobs:
           GH_TOKEN: ${{ secrets.FEED_DISPATCH_TOKEN }}
         run: |
           if [ -z "$GH_TOKEN" ]; then
-            echo "::error::FEED_DISPATCH_TOKEN is not set, so openwrt-feed was never told about this release."
+            echo "::error::FEED_DISPATCH_TOKEN is not set, so openwrt-cloud was never told about this release."
             echo "The feed's releases channel only rebuilds on this dispatch — without it the tag" >&2
             echo "ships to GitHub Releases but never reaches the feed. Create a fine-grained PAT" >&2
-            echo "scoped to eamonxg/openwrt-feed with Contents: read and write, then store it as" >&2
+            echo "scoped to eamonxg/openwrt-cloud with Contents: read and write, then store it as" >&2
             echo "the FEED_DISPATCH_TOKEN secret in this repository." >&2
             exit 1
           fi
-          gh api repos/eamonxg/openwrt-feed/dispatches \
+          gh api repos/eamonxg/openwrt-cloud/dispatches \
             -f event_type=package-released \
             -f 'client_payload[repo]=${{ github.repository }}' \
             -f 'client_payload[tag]=${{ github.ref_name }}'
