@@ -18,6 +18,7 @@
 
 - **侧边栏布局**：可折叠侧边栏，支持手风琴式子菜单与移动端抽屉。
 - **深色/浅色模式**：内置切换按钮，偏好自动保存，加载时无闪烁恢复。
+- **命令面板（⌘K）**：在顶栏一键搜索并跳转到任意页面。
 - **shadcn/ui 设计**：现代简洁的视觉风格，参考了其 Dashboard 布局。
 - **现代技术栈**：界面加载迅速、切换流畅，字体与图标经过精心挑选。
 
@@ -59,11 +60,11 @@ OpenWrt 25.12+ 及 Snapshot 版本使用 `apk`；旧版本使用 `opkg`。
 cd /tmp
 
 # opkg
-uclient-fetch -O luci-theme-shadcn.ipk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn_0.3.0-r20260711_all.ipk
+uclient-fetch -O luci-theme-shadcn.ipk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn_0.4.0-r20260808_all.ipk
 opkg install luci-theme-shadcn.ipk
 
 # apk
-uclient-fetch -O luci-theme-shadcn.apk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn-0.3.0-r20260711.apk
+uclient-fetch -O luci-theme-shadcn.apk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn-0.4.0-r20260808.apk
 apk add --allow-untrusted luci-theme-shadcn.apk
 ```
 

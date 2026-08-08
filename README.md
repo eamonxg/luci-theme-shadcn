@@ -18,6 +18,7 @@
 
 - **Sidebar layout**: Collapsible sidebar with accordion sub-menus and mobile drawer.
 - **Dark / Light mode**: Built-in toggle, preference remembered automatically, flash-free restore on load.
+- **Command palette (⌘K)**: Search and jump to any page from the topbar.
 - **shadcn/ui design**: Clean, modern look, following its dashboard layout.
 - **Modern stack**: Fast to load, smooth to navigate, with carefully chosen typography and icons.
 
@@ -59,11 +60,11 @@ OpenWrt 25.12+ and snapshots use `apk`; older versions use `opkg`.
 cd /tmp
 
 # opkg
-uclient-fetch -O luci-theme-shadcn.ipk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn_0.3.0-r20260711_all.ipk
+uclient-fetch -O luci-theme-shadcn.ipk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn_0.4.0-r20260808_all.ipk
 opkg install luci-theme-shadcn.ipk
 
 # apk
-uclient-fetch -O luci-theme-shadcn.apk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn-0.3.0-r20260711.apk
+uclient-fetch -O luci-theme-shadcn.apk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn-0.4.0-r20260808.apk
 apk add --allow-untrusted luci-theme-shadcn.apk
 ```
 
