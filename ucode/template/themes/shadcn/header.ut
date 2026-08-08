@@ -71,8 +71,8 @@
 		<link rel="icon" href="{{ media }}/images/favicon.ico" sizes="any">
 		<link rel="apple-touch-icon" href="{{ media }}/images/apple-touch-icon.png">
 		<link rel="manifest" href="{{ media }}/images/site.webmanifest">
-		{% if (node && node.css): %}
-		<link rel="stylesheet" href="{{ resource }}/{{ node.css }}">
+		{% if (dispatched && dispatched.css): %}
+		<link rel="stylesheet" href="{{ resource }}/{{ dispatched.css }}">
 		{% endif %}
 		{% if (css): %}
 		<style>{{ css }}</style>
@@ -82,7 +82,7 @@
 	</head>
 
 	<body
-		class="lang_{{ dispatcher.lang }} {{ entityencode(striptags((node && node.title) ? node.title : ''), true) }}"
+		class="lang_{{ dispatcher.lang }}"
 		data-page="{{ entityencode(page, true) }}"
 	>
 		{% if (!blank_page): %}
