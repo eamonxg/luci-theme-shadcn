@@ -76,7 +76,7 @@
 		</div>
 
 		<footer class="login-footer">
-			<p>© <a href="https://github.com/eamonxg/luci-theme-shadcn/graphs/contributors" target="_blank" rel="noreferrer">luci-theme-shadcn</a> · Powered by <a href="{{ entityencode(version.disturl ? version.disturl : '#', true) }}" target="_blank" rel="noreferrer">{{ version.distname }}</a> &amp; <a href="https://github.com/openwrt/luci" target="_blank" rel="noreferrer">{{ version.luciname }}</a> &amp; <a href="https://github.com/shadcn-ui/ui" target="_blank" rel="noreferrer">shadcn</a> &amp; <a href="https://github.com/lucide-icons/lucide" target="_blank" rel="noreferrer">Lucide</a></p>
+			<p>© <a href="https://github.com/eamonxg/luci-theme-shadcn/graphs/contributors?all=1" target="_blank" rel="noreferrer">luci-theme-shadcn</a> · Powered by <a href="{{ entityencode(version.disturl ? version.disturl : '#', true) }}" target="_blank" rel="noreferrer">{{ version.distname }}</a> &amp; <a href="https://github.com/openwrt/luci" target="_blank" rel="noreferrer">{{ version.luciname }}</a> &amp; <a href="https://github.com/shadcn-ui/ui" target="_blank" rel="noreferrer">shadcn</a> &amp; <a href="https://github.com/lucide-icons/lucide" target="_blank" rel="noreferrer">Lucide</a></p>
 		</footer>
 	</section>
 
