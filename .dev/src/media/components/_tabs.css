@@ -1,6 +1,6 @@
 /* shadcn Tabs (default) — LuCI tab sections */
 .cbi-tabmenu {
-  @apply bg-muted text-muted-foreground mb-2 inline-flex min-h-9 w-fit max-w-full items-center justify-center gap-0 overflow-x-auto rounded-lg p-[3px];
+  @apply bg-muted text-muted-foreground mb-2 inline-flex min-h-9 w-fit max-w-full items-center gap-0 overflow-x-auto rounded-lg p-[3px];
 
   li {
     @apply relative m-0 min-w-fit shrink-0 list-none;
