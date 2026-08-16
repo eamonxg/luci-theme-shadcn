@@ -14,22 +14,32 @@ theme-specific parts — hostname/title format, the sidebar sync in
 `menu-shadcn.js`, `#maincontent` being the scroller — are the only
 divergences, each called out below.
 
+## At a glance
+
+![Same-document navigation: full reload vs client router](https://raw.githubusercontent.com/eamonxg/assets/master/shared/architecture/same-document-router-architecture.png)
+
+Part I is the timing comparison measured below; Part II is the same
+architecture the rest of this document spells out — navigation sources,
+eligibility gates, the local resolver, the navigation transaction, and the
+document state that now has to be torn down by hand because the document no
+longer dies.
+
 ## Prior art
 
-Other LuCI themes solve the same problem, and reading one of them (credited
-in the README) informed two pieces here: pausing `L.Poll` on a hidden tab,
-and folding a view's read-only state along its dispatch path (both below).
-The rest is independent, and one choice diverges deliberately. The common
-approach drives navigation through the **History API**
-(`pushState`/`popstate`) with its own scroll bookkeeping and a
-`prototype.render` guard to repair stale renders; this router is built on
-the **Navigation API** instead (see "Kernel"), which hands scroll, history
-and supersession to the browser and needs none of that — at the cost of
-running only on newer browsers, where the theme falls back to the plain MPA
-it already is. On top of that shared base this router also adds a
-session-expiry gate, reproduces `template` pages from the server's own shell
-rather than hand-porting them, and cross-fades the swap with a view
-transition — each its own section below.
+[luci-theme-footstrap](https://github.com/VizzleTF/luci-theme-footstrap)
+(credited in the README) solves the same problem, and reading it informed
+two pieces here: pausing `L.Poll` on a hidden tab, and folding a view's
+read-only state along its dispatch path (both below). The rest is
+independent, and one choice diverges deliberately. footstrap drives
+navigation through the **History API** (`pushState`/`popstate`) with its own
+scroll bookkeeping and a `prototype.render` guard to repair stale renders;
+this router is built on the **Navigation API** instead (see "Kernel"), which
+hands scroll, history and supersession to the browser and needs none of
+that — at the cost of running only on newer browsers, where the theme falls
+back to the plain MPA it already is. On top of that shared base this router
+also adds a session-expiry gate, reproduces `template` pages from the
+server's own shell rather than hand-porting them, and cross-fades the swap
+with a view transition — each its own section below.
 
 ## Why it pays, measured
 
@@ -92,7 +102,7 @@ traversal / scrolls to top on push, so the router carries no
 one piece of scroll bookkeeping it does keep is for `#maincontent`, the
 theme's own scroller (see "The navigation procedure", step 7).
 
-Why this API rather than the History API the other themes use:
+Why this API rather than the History API `luci-theme-footstrap` uses:
 
 - **The browser owns URL, history and scroll.** `pushState` puts the
   router in charge of all three and of keeping them consistent with what

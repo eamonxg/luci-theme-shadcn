@@ -121,5 +121,5 @@ make package/luci-theme-shadcn/compile -j$(nproc) V=s
 - [Vite](https://vite.dev/) 和 [Tailwind CSS](https://tailwindcss.com/)
 - [luci-theme-bootstrap](https://github.com/openwrt/luci/tree/master/themes/luci-theme-bootstrap) — 模板结构与 LuCI 集成参考
 - [luci-theme-material](https://github.com/openwrt/luci/tree/master/themes/luci-theme-material) — 侧边栏菜单渲染参考
-- [luci-theme-footstrap](https://github.com/VizzleTF/luci-theme-footstrap) — 一个自带客户端路由的 LuCI 主题。同文档导航借鉴了它的部分思路，并改用 Navigation API 实现——见 `.dev/docs/router.md`
+- [luci-theme-footstrap](https://github.com/VizzleTF/luci-theme-footstrap) — 一个自带客户端路由的 LuCI 主题。同文档导航借鉴了它的部分思路，并改用 Navigation API 实现——详见[路由文档](.dev/docs/router.md)
 - [Claude Code](https://claude.ai/code)

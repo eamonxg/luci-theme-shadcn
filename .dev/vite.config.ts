@@ -274,7 +274,7 @@ function createLocalServePlugin(): Plugin {
 // scripts/mock-bar.client.js — a floating bar that lists the snapshots, opens
 // the one matching the open page, captures the open device page
 // (POST /mocks/__save), and inside a snapshot takes over its LuCI links.
-// See "Mock Pages" in the repo-root CLAUDE.md.
+// See .dev/docs/mock-pages.md.
 const MOCK_ROUTE = "/mocks";
 const MOCKS_DIR = resolve(CURRENT_DIR, "mocks");
 const MOCKS_STATIC_DIR = join(MOCKS_DIR, "static");
