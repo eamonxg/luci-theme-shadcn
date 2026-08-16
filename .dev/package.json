@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "test": "node --test tests/*.test.js",
     "setup:router": "node scripts/setup.js",
     "build": "pnpm clean && pnpm gen:tokens && pnpm check:contrast && vite build && pnpm check:colors",
     "check:colors": "node scripts/check-built-css.js",

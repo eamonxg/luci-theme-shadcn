@@ -15,6 +15,8 @@
    Nothing here renders markup, so none of it belongs in the scan. */
 @source not "../../vite.config.ts";
 @source not "../../scripts/*.client.js";
+@source not "../../tests/*.js";
+@source not "../../docs/*.md";
 
 @custom-variant dark (&:where([data-darkmode=true], [data-darkmode=true] *));
 
@@ -36,5 +38,6 @@
 @import "./components/_tabs.css";
 @import "./components/_palette.css";
 @import "./components/_view-transitions.css";
+@import "./components/_router.css";
 @import "./_utilities.css";
 @import "./_shared.css";

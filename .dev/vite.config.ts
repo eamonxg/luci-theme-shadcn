@@ -149,6 +149,7 @@ function createLocalServePlugin(): Plugin {
     "/luci-static/resources/sidebar-shadcn.js":
       "src/resource/sidebar-shadcn.js",
     "/luci-static/resources/menu-shadcn.js": "src/resource/menu-shadcn.js",
+    "/luci-static/resources/router-shadcn.js": "src/resource/router-shadcn.js",
   };
 
   // Any theme CSS (entries, partials, patches) or served JS change must force

@@ -17,6 +17,7 @@
 ## 特性
 
 - **侧边栏布局**：可折叠侧边栏，支持手风琴式子菜单与移动端抽屉。
+- **快且丝滑的导航体验**：在支持的浏览器上，切换页面时只更新内容、不整页刷新，切换起来丝滑流畅，加载速度大幅提升（详见[路由文档](.dev/docs/router.md)）。这套无刷新切换的思路参考了 [luci-theme-footstrap](https://github.com/VizzleTF/luci-theme-footstrap)。
 - **深色/浅色模式**：内置切换按钮，偏好自动保存，加载时无闪烁恢复。
 - **命令面板（⌘K）**：在顶栏一键搜索并跳转到任意页面。
 - **shadcn/ui 设计**：现代简洁的视觉风格，参考了其 Dashboard 布局。
@@ -35,6 +36,7 @@
   - **Chrome/Edge 111+** _(2023 年 3 月发布)_
   - **Safari 16.4+** _(2023 年 3 月发布)_
   - **Firefox 128+** _(2024 年 7 月发布)_
+  - _可选增强，非必需：_ 页面间的同文档导航（点菜单不整页刷新）在支持的浏览器上使用 [Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API)——Chrome/Edge 105+、Safari 26.2+、Firefox 147+；不支持的浏览器自动保持传统整页跳转，功能不受影响。
 
 ## 安装
 
@@ -119,4 +121,5 @@ make package/luci-theme-shadcn/compile -j$(nproc) V=s
 - [Vite](https://vite.dev/) 和 [Tailwind CSS](https://tailwindcss.com/)
 - [luci-theme-bootstrap](https://github.com/openwrt/luci/tree/master/themes/luci-theme-bootstrap) — 模板结构与 LuCI 集成参考
 - [luci-theme-material](https://github.com/openwrt/luci/tree/master/themes/luci-theme-material) — 侧边栏菜单渲染参考
+- [luci-theme-footstrap](https://github.com/VizzleTF/luci-theme-footstrap) — 一个自带客户端路由的 LuCI 主题。同文档导航借鉴了它的部分思路，并改用 Navigation API 实现——见 `.dev/docs/router.md`
 - [Claude Code](https://claude.ai/code)

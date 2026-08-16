@@ -193,13 +193,19 @@ return baseclass.extend({
   },
 
   render(tree) {
-    const dp = L.env.dispatchpath || [];
     const { branch, branchUrl } = this._resolveMenuBranch(tree);
+    this.tree = tree;
+    this.branch = branch;
+    this.branchUrl = branchUrl;
 
     this.renderSidebarNav(branch, branchUrl);
     this.renderBreadcrumb(branch, branchUrl);
     this.initPalette(branch, branchUrl);
+    this.renderTabs(tree);
+  },
 
+  renderTabs(tree) {
+    const dp = L.env.dispatchpath || [];
     const tab = document.getElementById("tabmenu");
     if (tab) {
       tab.innerHTML = "";
@@ -217,6 +223,73 @@ return baseclass.extend({
       }
       if (node) this.renderTabMenu(node, url);
     }
+  },
+
+  // Re-marks the sidebar, crumb and tabs from L.env after a same-document
+  // navigation (router-shadcn.js). The sidebar keeps its DOM; only the
+  // active highlight moves — the same longest-link-prefix rule header.ut's
+  // pre-paint replay applies to the cached markup.
+  syncRoute() {
+    if (!this.tree) return;
+
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) {
+      sidebar
+        .querySelectorAll(".active")
+        .forEach((el) => el.classList.remove("active"));
+
+      const path = new URL(
+        L.url(...(L.env.dispatchpath || []).slice(0, 3)),
+        location.href,
+      ).pathname;
+      let best = null;
+      let bestLen = -1;
+      sidebar
+        .querySelectorAll(
+          "a.sidebar-sub-link, a.sidebar-nav-parent, a.sidebar-logout",
+        )
+        .forEach((a) => {
+          const p = a.pathname;
+          if ((path === p || path.startsWith(p + "/")) && p.length > bestLen) {
+            best = a;
+            bestLen = p.length;
+          }
+        });
+
+      if (best) {
+        const sub = best.closest(".sidebar-sub-item");
+        if (sub) {
+          sub.classList.add("active");
+          const acc = best.closest(".sidebar-accordion-item");
+          if (acc) {
+            acc.classList.add("active");
+            if (sidebar.getAttribute("data-collapsed") !== "true") {
+              sidebar
+                .querySelectorAll(".sidebar-accordion-item")
+                .forEach((item) =>
+                  item.setAttribute(
+                    "data-open",
+                    item === acc ? "true" : "false",
+                  ),
+                );
+            }
+          }
+        } else if (best.classList.contains("sidebar-logout")) {
+          best.classList.add("active");
+        } else {
+          best.closest(".sidebar-nav-item")?.classList.add("active");
+        }
+      }
+    }
+
+    this.renderBreadcrumb(this.branch, this.branchUrl);
+    this.renderTabs(this.tree);
+  },
+
+  closeSurfaces() {
+    this.closePalette();
+    window.ShadcnSidebar?.closeDrawer?.();
+    window.ShadcnSidebar?._hideCollapsedPopover?.();
   },
 
   /**

@@ -15,19 +15,26 @@
 	const page_segs = length(ctx?.request_path) ? ctx.request_path : (ctx?.path || []);
 	const page = join('-', page_segs);
 	// On-demand patches — see "On-demand patches" in CLAUDE.md.
-	let patch_files = [], patch_scripts = [];
+	let patch_files = [], patch_scripts = [], patch_all = [];
 	if (!blank_page) {
 		let seg_prefixes = {}, acc = null;
 		for (let seg in page_segs)
 			seg_prefixes[acc = (acc == null ? seg : `${acc}-${seg}`)] = true;
 		for (let f in lsdir(`/www${media}/patches`) ?? []) {
-			if (substr(f, -4) == '.css' && exists(seg_prefixes, substr(f, 0, -4)))
-				push(patch_files, substr(f, 0, -4));
-			else if (substr(f, -3) == '.js' && exists(seg_prefixes, substr(f, 0, -3)))
-				push(patch_scripts, substr(f, 0, -3));
+			if (substr(f, -4) == '.css') {
+				push(patch_all, f);
+				if (exists(seg_prefixes, substr(f, 0, -4)))
+					push(patch_files, substr(f, 0, -4));
+			}
+			else if (substr(f, -3) == '.js') {
+				push(patch_all, f);
+				if (exists(seg_prefixes, substr(f, 0, -3)))
+					push(patch_scripts, substr(f, 0, -3));
+			}
 		}
 		sort(patch_files);
 		sort(patch_scripts);
+		sort(patch_all);
 	}
 
 	http.prepare_content('text/html; charset=UTF-8');
@@ -53,18 +60,18 @@
 				document.documentElement.setAttribute('data-sidebar-collapsed', collapsed ? 'true' : 'false');
 			})();
 		</script>
-		<style>html{background:oklch(0.985 0.004 275);color-scheme:light}html[data-darkmode=true]{background:oklch(0.159 0.005 264);color-scheme:dark}</style>
+		<style data-shadcn-shell>html{background:oklch(0.985 0.004 275);color-scheme:light}html[data-darkmode=true]{background:oklch(0.159 0.005 264);color-scheme:dark}</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<meta name="color-scheme" content="light dark">
 		{% if (blank_page): %}
 		<link rel="stylesheet" href="{{ media }}/login.css">
 		{% else %}
-		<link rel="stylesheet" href="{{ media }}/main.css">
+		<link rel="stylesheet" href="{{ media }}/main.css" data-shadcn-shell>
 		{% for (let patch in patch_files): %}
-		<link rel="stylesheet" href="{{ media }}/patches/{{ patch }}.css">
+		<link rel="stylesheet" href="{{ media }}/patches/{{ patch }}.css" data-shadcn-patch="{{ patch }}">
 		{% endfor %}
 		{% for (let patch in patch_scripts): %}
-		<script defer src="{{ media }}/patches/{{ patch }}.js"></script>
+		<script defer src="{{ media }}/patches/{{ patch }}.js" data-shadcn-patch="{{ patch }}"></script>
 		{% endfor %}
 		{% endif %}
 		<link rel="icon" href="{{ media }}/images/favicon.svg" type="image/svg+xml">
@@ -72,19 +79,16 @@
 		<link rel="apple-touch-icon" href="{{ media }}/images/apple-touch-icon.png">
 		<link rel="manifest" href="{{ media }}/images/site.webmanifest">
 		{% if (dispatched && dispatched.css): %}
-		<link rel="stylesheet" href="{{ resource }}/{{ dispatched.css }}">
+		<link rel="stylesheet" href="{{ resource }}/{{ dispatched.css }}" data-shadcn-node-css="{{ entityencode(dispatched.css, true) }}">
 		{% endif %}
 		{% if (css): %}
-		<style>{{ css }}</style>
+		<style data-shadcn-shell>{{ css }}</style>
 		{% endif %}
 		<script src="{{ dispatcher.build_url('admin/translations', dispatcher.lang) }}"></script>
 		<script src="{{ resource }}/cbi.js"></script>
 	</head>
 
-	<body
-		class="lang_{{ dispatcher.lang }}"
-		data-page="{{ entityencode(page, true) }}"
-	>
+	<body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(page, true) }}" data-asset-version="{# PKG_VERSION #}"{% if (length(patch_all)): %} data-patches="{{ entityencode(join(' ', patch_all), true) }}"{% endif %}>
 		{% if (!blank_page): %}
 
 		<div
@@ -210,7 +214,7 @@
 					</div>
 				</header>
 
-				<div id="maincontent">
+				<div id="maincontent" tabindex="-1">
 				{% if (getuid() == 0 && root_pw_unset && ctx && ctx.authsession): %}
 					<div class="alert-message warning">
 						<h4>{{ _('No password set!') }}</h4>

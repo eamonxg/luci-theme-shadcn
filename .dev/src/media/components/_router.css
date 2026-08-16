@@ -1,0 +1,39 @@
+/* Same-document navigation chrome (router-shadcn.js, .dev/docs/router.md). */
+
+/* A hairline across the top that only appears once a navigation outlives
+   its silent 150 ms, creeps towards the right while the view renders, and
+   completes on commit. */
+#shadcn-nav-progress {
+  @apply from-progress-bar-start to-progress-bar-end pointer-events-none fixed inset-x-0 top-0 z-80 h-0.5 origin-left scale-x-0 bg-linear-to-r opacity-0;
+
+  &[data-state="active"] {
+    @apply scale-x-90 opacity-100 transition-[scale,opacity] duration-[8s] ease-out;
+  }
+
+  &[data-state="done"] {
+    @apply scale-x-100 opacity-0 transition-[scale,opacity] duration-300 ease-out;
+  }
+}
+
+/* The new page's title for screen readers after a swap, which fires no
+   load event. */
+#shadcn-nav-status {
+  @apply sr-only;
+}
+
+#maincontent {
+  /* Focus target after a swap (tabindex=-1, focused by script): a ring
+     around the whole scroll region reads as a glitch, not as focus. */
+  @apply outline-none;
+
+  /* The incoming region keeps its full width for layout-measuring renders
+     but takes no space and no paint. */
+  .view-staging {
+    @apply invisible h-0 overflow-hidden;
+  }
+
+  /* Outgoing page while the router renders the next one. */
+  #view.view-leaving {
+    @apply cursor-progress opacity-60 transition-opacity duration-150;
+  }
+}

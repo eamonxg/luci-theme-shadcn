@@ -17,6 +17,7 @@
 ## Features
 
 - **Sidebar layout**: Collapsible sidebar with accordion sub-menus and mobile drawer.
+- **Fast, silky navigation**: On supported browsers, switching pages only updates the content instead of reloading the whole page, so moving between pages feels seamless and loads much faster (see the [router doc](.dev/docs/router.md)). This no-reload page-switching took cues from [luci-theme-footstrap](https://github.com/VizzleTF/luci-theme-footstrap).
 - **Dark / Light mode**: Built-in toggle, preference remembered automatically, flash-free restore on load.
 - **Command palette (⌘K)**: Search and jump to any page from the topbar.
 - **shadcn/ui design**: Clean, modern look, following its dashboard layout.
@@ -35,6 +36,7 @@
   - **Chrome/Edge 111+** _(released March 2023)_
   - **Safari 16.4+** _(released March 2023)_
   - **Firefox 128+** _(released July 2024)_
+  - _Optional enhancement, not a requirement:_ same-document navigation (no full page reload between view pages) uses the [Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API) where available — Chrome/Edge 105+, Safari 26.2+, Firefox 147+. Browsers without it keep classic full-page navigation automatically, with no loss of function.
 
 ## Installation
 
@@ -119,4 +121,5 @@ make package/luci-theme-shadcn/compile -j$(nproc) V=s
 - [Vite](https://vite.dev/) and [Tailwind CSS](https://tailwindcss.com/)
 - [luci-theme-bootstrap](https://github.com/openwrt/luci/tree/master/themes/luci-theme-bootstrap) — template structure and LuCI integration patterns
 - [luci-theme-material](https://github.com/openwrt/luci/tree/master/themes/luci-theme-material) — sidebar menu rendering approach
+- [luci-theme-footstrap](https://github.com/VizzleTF/luci-theme-footstrap) — a LuCI theme with its own client-side router. The same-document navigation borrows some of its ideas and implements them on the Navigation API instead — see `.dev/docs/router.md`
 - [Claude Code](https://claude.ai/code)
