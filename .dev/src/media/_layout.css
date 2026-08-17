@@ -120,35 +120,31 @@ html[data-sidebar-collapsed="true"] #sidebar {
   }
 }
 
-/* Grid 0fr↔1fr accordion: animates to the content's real height with no JS
-   measurement (no scrollHeight reflow) and no first-paint flash — the active
-   section renders with data-open="true", so grid-template-rows starts at 1fr
-   and a transition never fires on initial style resolution. The inner row needs
-   min-height:0 + overflow:hidden so it can collapse below its content height.
-   visibility must transition too: the collapsed list's border-box clamps at its
-   own py-1 (8px of hoverable, tabbable padding shell overflowing the 0fr track,
-   clipping at the padding box keeps the first link's top sliver live), and
-   hidden-ness conveniently resolves visible for the whole close animation. */
+/* Grid 0fr↔1fr accordion with an opacity fade: animates to the content's
+   real height with no JS measurement, and the active section renders open
+   so no transition fires on first paint. The clip sits on the grid
+   container, not the list — an auto-height grid re-resolves a mid-transition
+   Nfr against its own already-shrunk height, so a list clipped at its own
+   box loses rows faster than the space closes. The list keeps its natural
+   height (self-start) so its border-l spans every visible row, and carries
+   no vertical padding: padding would give the 0fr track a floor, and a
+   closing section that stops short while its exclusive sibling is still
+   opening bounces every row below them. visibility transitions too, so the
+   collapsed links leave the tab order only once the close has finished. */
 .sidebar-accordion-sub {
-  @apply invisible grid grid-rows-[0fr] transition-[grid-template-rows,visibility] duration-200;
+  @apply invisible grid grid-rows-[0fr] overflow-hidden opacity-0 transition-[grid-template-rows,opacity,visibility] duration-200 ease-out;
 
   > * {
-    @apply min-h-0 overflow-hidden;
+    @apply min-h-0 self-start;
   }
 }
 
 .sidebar-accordion-item[data-open="true"] > .sidebar-accordion-sub {
-  @apply visible grid-rows-[1fr];
+  @apply visible grid-rows-[1fr] opacity-100;
 }
 
 .sidebar-sub-list {
-  @apply border-sidebar-border ml-4 list-none py-1 pl-2;
-}
-
-.sidebar-accordion-item[data-open="true"]
-  > .sidebar-accordion-sub
-  .sidebar-sub-list {
-  @apply border-l;
+  @apply border-sidebar-border ml-4 list-none border-l pl-2;
 }
 
 .sidebar-sub-item {
