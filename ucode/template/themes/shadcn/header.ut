@@ -52,15 +52,10 @@
 				var theme = localStorage.getItem('shadcn.theme') || 'device';
 				var dark = theme === 'dark' || (theme === 'device' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 				document.documentElement.setAttribute('data-darkmode', dark ? 'true' : 'false');
-				/* Used color-scheme must follow the app theme, not the OS: Chrome
-				   paints the inter-navigation blank frame with the canvas color
-				   derived from it — a light canvas flashes white in forced dark. */
-				document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
 				var collapsed = localStorage.getItem('shadcn.sidebar') === 'true';
 				document.documentElement.setAttribute('data-sidebar-collapsed', collapsed ? 'true' : 'false');
 			})();
 		</script>
-		<style data-shadcn-shell>html{background:oklch(0.985 0.004 275);color-scheme:light}html[data-darkmode=true]{background:oklch(0.159 0.005 264);color-scheme:dark}</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<meta name="color-scheme" content="light dark">
 		{% if (blank_page): %}

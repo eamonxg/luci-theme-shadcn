@@ -7,6 +7,14 @@
  * lives here so it is written once and imported by each.
  */
 
+html {
+  @apply scheme-light;
+}
+
+html[data-darkmode="true"] {
+  @apply scheme-dark;
+}
+
 /* Lucide icons loaded via <img>: <img>-embedded SVGs render with black strokes
    and ignore the parent's `color`, so flatten them to a single tone and invert
    for dark mode (per-context opacity stays in each stylesheet). */
