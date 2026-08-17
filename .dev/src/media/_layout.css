@@ -443,13 +443,11 @@ span[data-indicator] {
 /* ── Mobile sidebar overlay ───────────────────────────────────────── */
 
 #sidebar-overlay {
-  /* Transparent tap-catcher only — no dim. On iOS a dark scrim is unavoidably
-     drawn behind the translucent status/address bars (any fixed full-screen
-     element is), which reads as jarring; the drawer's own shadow separates it
-     from the page instead. */
-  @apply pointer-events-none invisible fixed inset-0 z-30 md:hidden;
+  /* Absolute, not fixed: iOS Safari 26 tints its bars from edge-touching
+     fixed elements' background-color, opacity notwithstanding. */
+  @apply bg-overlay-base-a50 pointer-events-none absolute inset-0 z-30 opacity-0 transition-opacity duration-200 md:hidden;
 
   &.active {
-    @apply pointer-events-auto visible;
+    @apply pointer-events-auto opacity-100;
   }
 }
