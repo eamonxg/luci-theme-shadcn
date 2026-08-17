@@ -336,6 +336,21 @@ test("session expiry is recognised from the same signals luci-base uses", () => 
   assert.equal(router.sessionGone(null, probe), false);
 });
 
+test("a navigation to the document's own URL is a reload, not a swap", () => {
+  const router = loadRouter({ tree });
+  const here = "https://r/cgi-bin/luci/admin/status/overview";
+
+  // luci-base's post-apply/revert `window.location = href.split('#')[0]`
+  // and the expiry modal's `protocol//host pathname search` are both this.
+  assert.equal(router.reloads(here), true);
+  assert.equal(router.reloads(`${here}#tab`), true);
+  assert.equal(router.reloads(`${here}?x=1`), false);
+  assert.equal(
+    router.reloads("https://r/cgi-bin/luci/admin/status/logs"),
+    false,
+  );
+});
+
 test("a menu.d node css is served for the resolved leaf only", () => {
   const t = {
     action: { type: "firstchild" },

@@ -196,9 +196,6 @@ return baseclass.extend({
         this.menu = menu;
         const current = this.initialRoute();
         if (!current) return;
-        this.bar = document.body.appendChild(
-          E("div", { id: "shadcn-nav-progress", "aria-hidden": "true" }),
-        );
         this.status = document.body.appendChild(
           E("div", {
             id: "shadcn-nav-status",
@@ -263,23 +260,43 @@ return baseclass.extend({
     });
   },
 
+  // Turbo Drive's progress bar, in shape: the element exists only while a
+  // navigation shows it (inserted after PROGRESS_DELAY, removed after the
+  // done fade), its width is driven inline and trickles in ever-smaller
+  // steps until commit, so a slow render never looks stuck. Overlapping
+  // navigations share the bar.
   progressStart() {
     this.pending = (this.pending ?? 0) + 1;
     clearTimeout(this.progressTimer);
-    this.progressTimer = setTimeout(
-      () => (this.bar.dataset.state = "active"),
-      PROGRESS_DELAY,
+    this.progressTimer = setTimeout(() => {
+      if (this.bar) return;
+      this.bar = document.body.appendChild(
+        E("div", { id: "shadcn-nav-progress", "aria-hidden": "true" }),
+      );
+      this.bar.offsetWidth; // commit the resting width so the first step transitions
+      this.trickle(10);
+    }, PROGRESS_DELAY);
+  },
+
+  trickle(value) {
+    if (!this.bar) return;
+    this.bar.style.width = `${value}%`;
+    this.trickleTimer = setTimeout(
+      () => this.trickle(value + (100 - value) / 30),
+      300,
     );
   },
 
   progressEnd() {
     if (--this.pending > 0) return;
     clearTimeout(this.progressTimer);
-    if (this.bar.dataset.state !== "active") return;
-    this.bar.dataset.state = "done";
-    this.progressTimer = setTimeout(() => {
-      if (this.bar.dataset.state === "done") delete this.bar.dataset.state;
-    }, 300);
+    clearTimeout(this.trickleTimer);
+    const bar = this.bar;
+    if (!bar) return;
+    this.bar = null;
+    bar.dataset.state = "done";
+    bar.style.width = "100%";
+    setTimeout(() => bar.remove(), 300);
   },
 
   sheets() {
@@ -369,6 +386,15 @@ return baseclass.extend({
     if (msg.error) return true;
     const data = Array.isArray(msg.result) ? msg.result[1] : msg.result;
     return data?.access === false;
+  },
+
+  // A navigation to the document's own URL is a reload by another name:
+  // luci-base reloads after apply/revert with `window.location = href` (a
+  // "replace" navigation, not a "reload"), expecting the server to re-render
+  // theme, language, hostname and menu — as does a click on the current
+  // page's own link. Those go to the server like an F5.
+  reloads(url) {
+    return url.split("#")[0] === window.location.href.split("#")[0];
   },
 
   nodespec(r) {
@@ -638,7 +664,8 @@ return baseclass.extend({
       ev.hashChange ||
       ev.downloadRequest !== null ||
       ev.formData ||
-      ev.navigationType === "reload"
+      ev.navigationType === "reload" ||
+      this.reloads(ev.destination.url)
     )
       return;
 

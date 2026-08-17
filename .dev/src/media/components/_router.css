@@ -1,17 +1,15 @@
 /* Same-document navigation chrome (router-shadcn.js, .dev/docs/router.md). */
 
-/* A hairline across the top that only appears once a navigation outlives
-   its silent 150 ms, creeps towards the right while the view renders, and
-   completes on commit. */
+/* Turbo Drive's bar: inserted by the router once a navigation outlives its
+   silent 150 ms, width driven inline and trickling until commit (so a slow
+   render keeps visibly moving), then filled, faded and removed from the
+   DOM. Only width and opacity move. Reduced motion drops the transitions,
+   not the bar. */
 #shadcn-nav-progress {
-  @apply from-progress-bar-start to-progress-bar-end pointer-events-none fixed inset-x-0 top-0 z-80 h-0.5 origin-left scale-x-0 bg-linear-to-r opacity-0;
-
-  &[data-state="active"] {
-    @apply scale-x-90 opacity-100 transition-[scale,opacity] duration-[8s] ease-out;
-  }
+  @apply from-progress-bar-start to-progress-bar-end pointer-events-none fixed top-0 left-0 z-80 h-0.5 w-0 bg-linear-to-r transition-[width] duration-300 ease-out;
 
   &[data-state="done"] {
-    @apply scale-x-100 opacity-0 transition-[scale,opacity] duration-300 ease-out;
+    @apply opacity-0 [transition:width_.3s_ease-out,opacity_.15s_ease-in_.15s];
   }
 }
 
