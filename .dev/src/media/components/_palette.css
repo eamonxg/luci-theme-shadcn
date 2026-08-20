@@ -42,9 +42,10 @@ button.cmdk-trigger {
 }
 
 .cmdk-panel {
-  /* 460px, not 600: rows carry only icon + section › title, so a wider
-     panel just opens a dead gutter down the right edge. */
-  @apply border-panel-border bg-panel-bg mt-[15vh] flex w-[min(460px,calc(100vw-32px))] flex-col overflow-hidden rounded-xl border shadow-2xl;
+  /* 560px: with the section label on the right edge, the width is what
+     separates title from label — 460 read cramped once rows became
+     two-anchored. */
+  @apply border-panel-border bg-panel-bg mt-[15vh] flex w-[min(560px,calc(100vw-32px))] flex-col overflow-hidden rounded-xl border shadow-2xl;
   @apply transition-[opacity,translate] duration-150 ease-out starting:-translate-y-1.5 starting:opacity-0;
   @apply max-md:mt-0 max-md:h-dvh max-md:w-full max-md:rounded-none max-md:border-0 max-md:pt-[env(safe-area-inset-top)] max-md:shadow-none max-md:transition-none;
 }
@@ -132,44 +133,20 @@ button.cmdk-cancel {
     @apply text-foreground min-w-0 truncate font-medium;
   }
 
-  .cmdk-sep {
-    @apply text-muted-foreground shrink-0 opacity-60;
-  }
-
+  /* Demoted to the right edge in small type — the row reads title-first
+     and the section label stays available without a per-row breadcrumb. */
   .cmdk-group-name {
-    @apply text-muted-foreground shrink-0;
+    @apply text-muted-foreground ml-auto shrink-0 text-xs;
   }
 
-  /* The right edge belongs to the focused row alone: the dispatch path is
-     worth reading when you are about to press Enter, and is pure noise on
-     the other ten rows. mousemove selects the row under the pointer, so
-     is-selected covers hover too — no separate :hover rule. */
-  .cmdk-right {
-    @apply ml-auto flex shrink-0 items-center gap-2 opacity-0 transition-opacity duration-100 ease-out;
-  }
-
-  .cmdk-path {
-    @apply text-muted-foreground font-mono text-xs opacity-70;
-    @apply max-md:hidden;
-  }
-
-  .cmdk-enter {
-    @apply border-border bg-label-surface text-muted-foreground rounded-md border px-1.5 py-px font-mono text-xs;
-    @apply max-md:hidden;
-  }
-
-  /* Not inside .cmdk-right: the tick marks which theme mode is in effect,
-     so it has to stay legible on every row, focused or not. */
+  /* The tick marks which theme mode is in effect, so it has to stay
+     legible on every row, focused or not. */
   .cmdk-check {
     @apply text-primary ml-auto block size-3.5 shrink-0 bg-current [mask:url('@assets/icons/check.svg')_center/contain_no-repeat];
   }
 
   &.is-selected {
     @apply bg-muted;
-
-    .cmdk-right {
-      @apply opacity-100;
-    }
   }
 }
 

@@ -34,6 +34,9 @@ const ICON_MAP = {
 /** sessionStorage key replayed pre-paint by the inline script in header.ut */
 const CACHE_KEY = "shadcn.sidebar.cache";
 
+/** localStorage key for the palette's most-recently-used page paths */
+const RECENTS_KEY = "shadcn.palette.recents";
+
 return baseclass.extend({
   __init__() {
     ui.menu.load().then((tree) => {
@@ -462,9 +465,10 @@ return baseclass.extend({
 
   /**
    * Command palette (⌘K), replaces the C1 topbar route search. One panel
-   * serves navigation (the same two-level model the sidebar renders, plus
-   * the logout leaf) and theme-mode commands — the only UI able to return
-   * to 'device' once the header toggle has written an explicit mode.
+   * serves navigation (the same two-level model the sidebar renders) and
+   * the ">" command scope — theme modes plus logout; the modes are the
+   * only UI able to return to 'device' once the header toggle has written
+   * an explicit mode.
    * DOM is built lazily on first open; page load binds one trigger click
    * and one keydown listener.
    * Translation caveat: the dispatcher load_catalog()s the whole
@@ -691,6 +695,57 @@ return baseclass.extend({
     document.body.appendChild(this.palOverlay);
   },
 
+  /**
+   * localStorage can be unavailable (privacy modes) or hold anything after
+   * a downgrade — both read as "no history". No size cap: dedupe bounds the
+   * list by the pages actually visited, i.e. the menu's own scale.
+   */
+  _palReadRecents() {
+    try {
+      const list = JSON.parse(localStorage.getItem(RECENTS_KEY));
+      return Array.isArray(list)
+        ? list.filter((path) => typeof path === "string")
+        : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  _palRecordRecent(path) {
+    try {
+      localStorage.setItem(
+        RECENTS_KEY,
+        JSON.stringify([
+          path,
+          ...this._palReadRecents().filter((kept) => kept !== path),
+        ]),
+      );
+    } catch (e) {
+      // History is decorative; a sealed or full store just means none.
+    }
+  },
+
+  /**
+   * Pure LRU browse order: every visited page floats above the untouched
+   * ones, so long use converges on a fully most-recently-used list while
+   * unvisited pages keep menu order below (the sort is spec-stable). Paths
+   * that vanished from the menu drop out. Logout is a command, not a
+   * destination: it stays out of the browse list entirely and rides ">"
+   * instead (see _renderPalette) — but a typed query still reaches it.
+   */
+  _palBrowsePages() {
+    const recents = this._palReadRecents().filter((path) =>
+      this.palIndex.some((page) => page.path === path && !page.isLogout),
+    );
+    const rank = (page) => {
+      const at = recents.indexOf(page.path);
+      return at < 0 ? 0 : recents.length - at;
+    };
+    return this.palIndex
+      .filter((page) => !page.isLogout)
+      .sort((a, b) => rank(b) - rank(a));
+  },
+
   _renderPalette() {
     const trimmed = this.palInput.value.trimStart();
     const cmdOnly = trimmed.startsWith(">");
@@ -700,16 +755,18 @@ return baseclass.extend({
     let rows;
     if (q) {
       const hits = [];
-      if (!cmdOnly) {
-        this.palIndex.forEach((page) => {
-          const m = this._palScore(q, page.title, page.path, page.group);
-          if (m)
-            hits.push({
-              score: m.score,
-              node: this._palPageRow(page, m.ranges, m.groupRanges),
-            });
-        });
-      }
+      // ">" scopes to command rows — the theme modes plus logout.
+      const pool = cmdOnly
+        ? this.palIndex.filter((page) => page.isLogout)
+        : this.palIndex;
+      pool.forEach((page) => {
+        const m = this._palScore(q, page.title, page.path, page.group);
+        if (m)
+          hits.push({
+            score: m.score,
+            node: this._palPageRow(page, m.ranges, m.groupRanges),
+          });
+      });
       this.palModes.forEach((cmd) => {
         const m = this._palScore(q, cmd.title, `theme ${cmd.mode}`);
         if (m)
@@ -723,23 +780,26 @@ return baseclass.extend({
     } else {
       rows = [];
       if (!cmdOnly) {
-        // role=presentation: a listbox owns options, and these headings are
-        // decoration — every page row already carries its group name.
-        rows.push(
-          E("div", { class: "cmdk-group", role: "presentation" }, [
-            _("Navigation"),
-          ]),
-        );
-        this.palIndex.forEach((page) =>
+        // Everything above Design is navigation — a "Navigation" heading
+        // restated the obvious and was dropped with the per-row breadcrumb.
+        this._palBrowsePages().forEach((page) =>
           rows.push(this._palPageRow(page, null)),
         );
       }
+      // role=presentation: a listbox owns options, and this heading is
+      // decoration — it just fences the theme commands off the page rows.
       rows.push(
         E("div", { class: "cmdk-group", role: "presentation" }, [_("Design")]),
       );
       this.palModes.forEach((cmd) =>
         rows.push(this._palModeRow(cmd, themeNow, null)),
       );
+      // Logout rides ">" only, last after the modes — a command, not a
+      // destination (mirrors luci-theme-aurora's palette).
+      if (cmdOnly) {
+        const logout = this.palIndex.find((page) => page.isLogout);
+        if (logout) rows.push(this._palPageRow(logout, null));
+      }
     }
 
     if (!rows.length)
@@ -760,11 +820,13 @@ return baseclass.extend({
   },
 
   _palPageRow(page, ranges, groupRanges) {
-    // Hierarchy reads left→right like the breadcrumb: 一级 › 二级. Group
-    // names are uniformly short, so titles align into a clean column.
-    // tabindex -1: rows are reached with ↑/↓, which keeps the panel's tab
-    // cycle short enough to contain (see _buildPalette). option/aria-selected
-    // is how that arrow-key selection reaches assistive tech.
+    // Title leads, the section label is demoted to small type on the right
+    // edge — same row anatomy as luci-theme-aurora's palette, so the two
+    // themes stay legible side by side. The dispatch path is matchable but
+    // no longer rendered: it earned its keep as orientation, not as a
+    // per-row caption. tabindex -1: rows are reached with ↑/↓, which keeps
+    // the panel's tab cycle short enough to contain (see _buildPalette).
+    // option/aria-selected is how that selection reaches assistive tech.
     const row = E(
       "a",
       {
@@ -776,6 +838,7 @@ return baseclass.extend({
       },
       [
         this._sectionIcon(page.icon, 15),
+        E("span", { class: "cmdk-title" }, this._palMark(page.title, ranges)),
         page.group
           ? E(
               "span",
@@ -783,12 +846,6 @@ return baseclass.extend({
               this._palMark(page.group, groupRanges),
             )
           : "",
-        page.group ? E("span", { class: "cmdk-sep" }, ["›"]) : "",
-        E("span", { class: "cmdk-title" }, this._palMark(page.title, ranges)),
-        E("span", { class: "cmdk-right" }, [
-          E("code", { class: "cmdk-path" }, [page.path]),
-          E("kbd", { class: "cmdk-enter" }, ["↵"]),
-        ]),
       ],
     );
     if (page.isLogout)
@@ -800,6 +857,10 @@ return baseclass.extend({
           sessionStorage.removeItem("shadcn.sidebar.cache");
         } catch (e) {}
       });
+    else
+      // Remember the pick, then let the click navigate (router or full
+      // load) untouched.
+      row.addEventListener("click", () => this._palRecordRecent(page.path));
     return row;
   },
 
@@ -818,11 +879,7 @@ return baseclass.extend({
       [
         this._iconFile(cmd.iconFile, 15),
         E("span", { class: "cmdk-title" }, this._palMark(cmd.title, ranges)),
-        active
-          ? E("span", { class: "cmdk-check", "aria-hidden": "true" })
-          : E("span", { class: "cmdk-right" }, [
-              E("kbd", { class: "cmdk-enter" }, ["↵"]),
-            ]),
+        active ? E("span", { class: "cmdk-check", "aria-hidden": "true" }) : "",
       ],
     );
     row.addEventListener("click", () => {
