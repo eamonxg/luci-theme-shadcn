@@ -398,23 +398,6 @@ span[data-indicator] {
     }
   }
 
-  #syslog,
-  #log_textarea {
-    @apply w-full text-xs leading-snug;
-  }
-
-  #syslog {
-    /* Explicit border color: bare `border` falls back to currentColor
-       (the phosphor foreground) in Tailwind v4. */
-    @apply bg-terminal-bg text-terminal-fg border-border rounded-lg border p-4;
-  }
-
-  #content_syslog {
-    > div {
-      @apply flex flex-wrap items-baseline gap-x-2;
-    }
-  }
-
   .controls {
     @apply flex flex-wrap items-center gap-3;
     label {

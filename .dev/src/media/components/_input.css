@@ -33,7 +33,7 @@ textarea {
 
 input[type="radio"],
 input[type="checkbox"] {
-  @apply relative mr-3 inline-block h-4 w-4 cursor-pointer appearance-none disabled:cursor-not-allowed;
+  @apply relative mr-3 inline-block h-4 w-4 cursor-pointer appearance-none align-middle disabled:cursor-not-allowed;
   @apply before:border-input before:bg-background before:absolute before:inset-0 before:rounded before:border before:transition-colors before:duration-200;
   @apply after:bg-primary-foreground after:absolute after:inset-0 after:[mask-size:cover] after:[mask-position:center] after:[mask-repeat:no-repeat] after:opacity-0 after:transition-opacity after:duration-200;
   @apply checked:before:border-primary checked:before:bg-primary checked:after:opacity-100;
@@ -50,5 +50,5 @@ input[type="checkbox"] {
 }
 
 .cbi-checkbox {
-  @apply relative inline-flex items-center;
+  @apply relative inline-flex items-center align-middle;
 }

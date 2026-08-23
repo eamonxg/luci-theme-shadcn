@@ -95,7 +95,7 @@ h6 {
 }
 
 hr {
-  @apply border-0;
+  @apply border-border my-4 border-t;
 }
 
 strong {
