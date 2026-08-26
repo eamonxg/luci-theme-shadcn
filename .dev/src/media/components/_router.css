@@ -5,7 +5,7 @@
    render keeps visibly moving), then filled, faded and removed from the
    DOM. Only width and opacity move. Reduced motion drops the transitions,
    not the bar. */
-#shadcn-nav-progress {
+#luci-nav-progress {
   @apply from-progress-bar-start to-progress-bar-end pointer-events-none fixed top-0 left-0 z-80 h-0.5 w-0 bg-linear-to-r transition-[width] duration-300 ease-out;
 
   &[data-state="done"] {
@@ -15,7 +15,7 @@
 
 /* The new page's title for screen readers after a swap, which fires no
    load event. */
-#shadcn-nav-status {
+#luci-nav-status {
   @apply sr-only;
 }
 

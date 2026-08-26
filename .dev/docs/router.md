@@ -1,5 +1,11 @@
 # The client-side router
 
+> The router now ships from `@eamonxg/luci-theme-devkit` (`runtime/router.js`,
+> page-scoped patches in `runtime/patches.js`), built into
+> `resources/router-shadcn.js` by its Vite plugin; this theme keeps only the
+> markers, the `luci-navigate` listener in `menu-shadcn.js` and the CSS. The
+> design below is unchanged; the devkit copy is the maintained one.
+
 How the theme turns a menu click into an in-document view swap instead of a
 full page load, where it deliberately does not, and the invariants a router
 inside LuCI has to keep. Source: `.dev/src/resource/router-shadcn.js`,
@@ -428,10 +434,10 @@ handler in order:
 6. **Patches.** `header.ut` emits the installed on-demand patch stems as
    `body[data-patches]`; the router applies the same segment-prefix rule the
    template applies at render time: matching `patches/<stem>.css` links are
-   ensured (`<link data-shadcn-patch>`, enabled for the page on screen,
+   ensured (`<link data-luci-patch>`, enabled for the page on screen,
    `disabled` — not removed — for the rest, so a return costs nothing);
    matching `patches/<stem>.js` files are loaded once and their
-   `window.shadcn.patches[stem]` `{ mount, unmount }` pair is driven per
+   `window.luciPatches[stem]` `{ mount, unmount }` pair is driven per
    visit (the list of stems to mount belongs to the navigation that computed
    it, so a superseded one mounts nothing later); URLs the router adds carry
    the same `?v=PKG_VERSION` luci.mk stamps on the template's own links,
@@ -441,7 +447,7 @@ handler in order:
    the current page still wants that stem and unmounts it otherwise (a
    same-stem page reached meanwhile keeps it mounted).
    A menu.d node's own `css` (`header.ut` links `<resource>/<node.css>` for
-   the dispatched node, marked `data-shadcn-node-css`) is kept the same
+   the dispatched node, marked `data-luci-node-css`) is kept the same
    way: one `<link>` per stylesheet, enabled for the page whose resolved leaf
    declares it, `disabled` for every other page, never removed. Both
    attributes are exempt from the poison gate.
@@ -501,9 +507,9 @@ function`, and because `require()` caches by name the binding is fixed
      where one suffices.
 8. **Focus and announcement.** `#maincontent` (`tabindex=-1`) with
    `preventScroll`; the new `document.title` is written into
-   `#shadcn-nav-status` (`role=status`, `aria-live=polite`), since a
+   `#luci-nav-status` (`role=status`, `aria-live=polite`), since a
    same-document swap fires no load a screen reader would announce.
-9. **Progress.** A navigation that outlives 150 ms gets `#shadcn-nav-progress`
+9. **Progress.** A navigation that outlives 150 ms gets `#luci-nav-progress`
    inserted — Turbo Drive's bar, in shape: a hairline at the top whose
    `width` is driven inline and **trickles** in ever-smaller steps
    (`+ (100 - w) / 30` every 300 ms) until commit, so a slow render keeps
@@ -552,8 +558,8 @@ library that imports CSS at module eval never runs again, so deletion is
 one-way (an editor page came back as a black rectangle two million pixels
 tall). Hence a gate, not a sweep: before intercepting, any sheet outside
 `#view` that is not one of the theme's own — header.ut marks everything it
-renders (`data-shadcn-shell` on `main.css`, the font, custom and token
-`<style>`s; `data-shadcn-patch` on patches; `data-shadcn-node-css` on the
+renders (`data-luci-shell` on `main.css`, the font, custom and token
+`<style>`s; `data-luci-patch` on patches; `data-luci-node-css` on the
 menu.d node css) — marks the document **poisoned** and the navigation is a
 full load — the fresh document carries no view CSS, so the router resumes
 "Own" means _marked_, and the boot snapshot the gate

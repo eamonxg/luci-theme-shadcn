@@ -292,7 +292,7 @@
 
   // Page-scoped lifecycle for the router (see .dev/docs/router.md);
   // a full load simply mounts once.
-  ((window.shadcn ??= {}).patches ??= {})["admin-status-logs"] = {
+  (window.luciPatches ??= {})["admin-status-logs"] = {
     mount,
     unmount,
   };

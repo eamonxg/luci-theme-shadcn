@@ -61,12 +61,12 @@
 		{% if (blank_page): %}
 		<link rel="stylesheet" href="{{ media }}/login.css">
 		{% else %}
-		<link rel="stylesheet" href="{{ media }}/main.css" data-shadcn-shell>
+		<link rel="stylesheet" href="{{ media }}/main.css" data-luci-shell>
 		{% for (let patch in patch_files): %}
-		<link rel="stylesheet" href="{{ media }}/patches/{{ patch }}.css" data-shadcn-patch="{{ patch }}">
+		<link rel="stylesheet" href="{{ media }}/patches/{{ patch }}.css" data-luci-patch="{{ patch }}">
 		{% endfor %}
 		{% for (let patch in patch_scripts): %}
-		<script defer src="{{ media }}/patches/{{ patch }}.js" data-shadcn-patch="{{ patch }}"></script>
+		<script defer src="{{ media }}/patches/{{ patch }}.js" data-luci-patch="{{ patch }}"></script>
 		{% endfor %}
 		{% endif %}
 		<link rel="icon" href="{{ media }}/images/favicon.svg" type="image/svg+xml">
@@ -74,10 +74,10 @@
 		<link rel="apple-touch-icon" href="{{ media }}/images/apple-touch-icon.png">
 		<link rel="manifest" href="{{ media }}/images/site.webmanifest">
 		{% if (dispatched && dispatched.css): %}
-		<link rel="stylesheet" href="{{ resource }}/{{ dispatched.css }}" data-shadcn-node-css="{{ entityencode(dispatched.css, true) }}">
+		<link rel="stylesheet" href="{{ resource }}/{{ dispatched.css }}" data-luci-node-css="{{ entityencode(dispatched.css, true) }}">
 		{% endif %}
 		{% if (css): %}
-		<style data-shadcn-shell>{{ css }}</style>
+		<style data-luci-shell>{{ css }}</style>
 		{% endif %}
 		<script src="{{ dispatcher.build_url('admin/translations', dispatcher.lang) }}"></script>
 		<script src="{{ resource }}/cbi.js"></script>

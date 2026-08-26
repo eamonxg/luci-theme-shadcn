@@ -26,7 +26,7 @@ Because discovery is at render time, **any package — not just the theme — ma
 
 The same `lsdir()` sweep loads `patches/<page>.js` as `<script defer>` after the patch stylesheets (theme-owned sources in `src/resource/patches/`, Terser-compressed to `shadcn/patches/`; third-party packages may drop plain scripts the same way).
 
-A JS patch must register `window.shadcn.patches[<stem>] = { mount, unmount }` and mount itself once at eval: the [client-side router](router.md) drives it across same-document navigations and a plain script would otherwise keep running on pages that are gone. `header.ut` also emits every installed patch file as `body[data-patches]` and marks its own `<link>`/`<script>` tags `data-shadcn-patch` so the router can enable/disable them per page.
+A JS patch must register `window.luciPatches[<stem>] = { mount, unmount }` and mount itself once at eval: the [client-side router](router.md) drives it across same-document navigations and a plain script would otherwise keep running on pages that are gone. `header.ut` also emits every installed patch file as `body[data-patches]` and marks its own `<link>`/`<script>` tags `data-luci-patch` so the router can enable/disable them per page.
 
 ## Adding / removing a theme patch
 

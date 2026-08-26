@@ -20,6 +20,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "devDependencies": {
+    "@eamonxg/luci-theme-devkit": "^0.2.0",
     "@eamonxg/luci-theme-tokens": "^2.0.0",
     "@fontsource-variable/inter": "^5.2.8",
     "@tailwindcss/vite": "^4.3.0",
