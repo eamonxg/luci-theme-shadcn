@@ -50,10 +50,14 @@
   .network-status-table {
     @apply mb-3 flex flex-wrap justify-around gap-4;
   }
+
+  div[style*="display:grid"]:has(> .ifacebox) {
+    @apply place-items-center;
+  }
 }
 
 .ifacebox {
-  @apply border-border bg-panel-bg relative inline-flex min-w-36 flex-col items-stretch overflow-visible rounded-lg border text-center text-sm leading-5;
+  @apply border-border bg-panel-bg relative inline-flex min-w-32 flex-col items-stretch overflow-visible rounded-lg border text-center text-sm leading-5;
 
   .ifacebox-head {
     @apply border-border bg-label-surface text-foreground w-full rounded-t-lg border-b px-3 py-2 text-center text-sm font-semibold transition-colors duration-200;
