@@ -48,7 +48,7 @@
   }
 
   .network-status-table {
-    @apply mb-3 flex flex-wrap justify-around gap-4;
+    @apply mb-3 flex flex-wrap justify-around gap-4 md:flex-nowrap;
   }
 
   div[style*="display:grid"]:has(> .ifacebox) {
@@ -58,6 +58,10 @@
 
 .ifacebox {
   @apply border-border bg-panel-bg relative inline-flex min-w-32 flex-col items-stretch overflow-visible rounded-lg border text-center text-sm leading-5;
+
+  #cbi-network-interface & {
+    @apply md:min-w-38;
+  }
 
   .ifacebox-head {
     @apply border-border bg-label-surface text-foreground w-full rounded-t-lg border-b px-3 py-2 text-center text-sm font-semibold transition-colors duration-200;
@@ -86,7 +90,7 @@
     @apply text-foreground flex w-full flex-1 flex-col items-stretch justify-center gap-1 rounded-b-lg p-3 text-center;
 
     > img {
-      @apply mx-auto;
+      @apply mx-auto w-5;
     }
 
     > span {

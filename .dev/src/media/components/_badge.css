@@ -31,7 +31,7 @@
      tag redesign's horizontal padding is meant for text labels, so keep the
      label-less swatch a compact pill instead of a wide block. */
   .ifacebadge > & {
-    @apply rounded-full px-1 py-1.5;
+    @apply rounded-full px-1 py-0.5;
   }
 
   .cbi-dropdown & {
@@ -56,7 +56,8 @@
     }
   }
 
-  > img {
+  > img,
+  > .cbi-tooltip-container > img {
     @apply w-5 shrink-0 self-center;
   }
 
