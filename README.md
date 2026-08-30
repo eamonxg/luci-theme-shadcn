@@ -62,11 +62,11 @@ OpenWrt 25.12+ and snapshots use `apk`; older versions use `opkg`.
 cd /tmp
 
 # opkg
-uclient-fetch -O luci-theme-shadcn.ipk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn_0.4.0-r20260808_all.ipk
+uclient-fetch -O luci-theme-shadcn.ipk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn_0.5.0-r20260830_all.ipk
 opkg install luci-theme-shadcn.ipk
 
 # apk
-uclient-fetch -O luci-theme-shadcn.apk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn-0.4.0-r20260808.apk
+uclient-fetch -O luci-theme-shadcn.apk https://github.com/eamonxg/luci-theme-shadcn/releases/latest/download/luci-theme-shadcn-0.5.0-r20260830.apk
 apk add --allow-untrusted luci-theme-shadcn.apk
 ```
 
