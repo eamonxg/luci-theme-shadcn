@@ -54,6 +54,10 @@
 				document.documentElement.setAttribute('data-darkmode', dark ? 'true' : 'false');
 				var collapsed = localStorage.getItem('shadcn.sidebar') === 'true';
 				document.documentElement.setAttribute('data-sidebar-collapsed', collapsed ? 'true' : 'false');
+				var dockDesktop = localStorage.getItem('shadcn.dock.desktop') !== 'false';
+				document.documentElement.setAttribute('data-dock-desktop', dockDesktop ? 'true' : 'false');
+				var dockMobile = localStorage.getItem('shadcn.dock.mobile') !== 'false';
+				document.documentElement.setAttribute('data-dock-mobile', dockMobile ? 'true' : 'false');
 			})();
 		</script>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -102,9 +106,16 @@
 				   cached menu so it isn't replayed into the next session. */
 				document.addEventListener('click', function (e) {
 					var t = e.target && e.target.closest ? e.target.closest('a.sidebar-logout') : null;
-					if (!t) return;
-					window.shadcnSuppressSidebarCache = true;
-					try { sessionStorage.removeItem('shadcn.sidebar.cache'); } catch (err) {}
+					if (t) {
+						window.shadcnSuppressSidebarCache = true;
+						try { sessionStorage.removeItem('shadcn.sidebar.cache'); } catch (err) {}
+						return;
+					}
+					var cfg = e.target && e.target.closest ? e.target.closest('.sidebar-dock-config-btn') : null;
+					if (cfg) {
+						window.ShadcnSidebar?.closeDrawer?.();
+						window.ShadcnMenu?.openDockCustomizer?.();
+					}
 				}, true);
 
 				try {
@@ -112,7 +123,7 @@
 					if (!raw) return;
 					var cache = JSON.parse(raw);
 					var sb = document.getElementById('sidebar');
-					if (!sb || !cache || cache.v !== 1 || cache.lang !== document.documentElement.lang) return;
+					if (!sb || !cache || cache.v !== 4 || cache.lang !== document.documentElement.lang) return;
 
 					sb.innerHTML = cache.html;
 					sb.setAttribute('data-shadcn-built', '1');

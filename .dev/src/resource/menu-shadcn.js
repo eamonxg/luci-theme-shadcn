@@ -37,6 +37,20 @@ const CACHE_KEY = "shadcn.sidebar.cache";
 /** localStorage key for the palette's most-recently-used page paths */
 const RECENTS_KEY = "shadcn.palette.recents";
 
+/** localStorage keys for dock items and visibility toggles */
+const DOCK_KEY = "shadcn.dock.items";
+const DOCK_DESKTOP_KEY = "shadcn.dock.desktop";
+const DOCK_MOBILE_KEY = "shadcn.dock.mobile";
+
+/** Default fallback paths for the mobile dock in stock OpenWrt */
+const DEFAULT_DOCK_PATHS = [
+  "admin/status/overview",
+  "admin/network/network",
+  "admin/network/firewall",
+  "admin/system/system",
+  "admin/system/package-manager",
+];
+
 return baseclass.extend({
   __init__() {
     ui.menu.load().then((tree) => {
@@ -63,7 +77,7 @@ return baseclass.extend({
       sessionStorage.setItem(
         CACHE_KEY,
         JSON.stringify({
-          v: 1,
+          v: 4,
           lang: document.documentElement.lang || "",
           html: sidebar.innerHTML,
           scroll: nav.scrollTop || 0,
@@ -205,6 +219,8 @@ return baseclass.extend({
     this.renderBreadcrumb(branch, branchUrl);
     this.initPalette(branch, branchUrl);
     this.renderTabs(tree);
+    this.renderDock();
+    this.cacheSidebar();
   },
 
   renderTabs(tree) {
@@ -287,10 +303,12 @@ return baseclass.extend({
 
     this.renderBreadcrumb(this.branch, this.branchUrl);
     this.renderTabs(this.tree);
+    this.syncDockRoute();
   },
 
   closeSurfaces() {
     this.closePalette();
+    this.closeDockCustomizer(true);
     window.ShadcnSidebar?.closeDrawer?.();
     window.ShadcnSidebar?._hideCollapsedPopover?.();
   },
@@ -328,10 +346,35 @@ return baseclass.extend({
       foot.hidden = true;
     }
 
+    // Ensure footer has the Dock Settings trigger button
+    if (foot) {
+      const dockConfigBtn = E(
+        "button",
+        {
+          class: "sidebar-dock-config-btn",
+          type: "button",
+          "aria-label": _("Customize Bottom Dock"),
+          onclick: () => {
+            window.ShadcnSidebar?.closeDrawer?.();
+            this.openDockCustomizer();
+          },
+        },
+        [
+          E("span", { class: "sidebar-icon", "aria-hidden": "true" }, [
+            this._iconFile("sliders-horizontal", 18),
+          ]),
+          E("span", { class: "sidebar-label" }, [_("Customize Bottom Dock")]),
+        ],
+      );
+      foot.appendChild(dockConfigBtn);
+      foot.hidden = false;
+    }
+
     children.forEach((section) => {
       if (this._isLogoutMenuItem(section) && foot) {
         const isActive = dp[1] == section.name;
         const iconEl = this._sectionIcon(section.name, 18);
+
         foot.appendChild(
           E(
             "a",
@@ -520,6 +563,15 @@ return baseclass.extend({
       { mode: "dark", title: _("Dark Mode"), iconFile: "moon" },
       { mode: "device", title: _("Automatic"), iconFile: "monitor" },
     ];
+
+    this.palDockCommand = {
+      title: _("Customize Bottom Dock"),
+      iconFile: "sliders-horizontal",
+      action: () => {
+        this.closePalette();
+        this.openDockCustomizer();
+      },
+    };
 
     const isMac = /Mac|iP(ad|hone|od)/.test(navigator.platform);
     const keyEl = trigger.querySelector(".cmdk-trigger-key");
@@ -775,6 +827,18 @@ return baseclass.extend({
             node: this._palModeRow(cmd, themeNow, m.ranges),
           });
       });
+      if (this.palDockCommand) {
+        const m = this._palScore(
+          q,
+          this.palDockCommand.title,
+          "bottom dock customize navbar",
+        );
+        if (m)
+          hits.push({
+            score: m.score,
+            node: this._palCustomCommandRow(this.palDockCommand, m.ranges),
+          });
+      }
       hits.sort((a, b) => b.score - a.score);
       rows = hits.map((h) => h.node);
     } else {
@@ -794,6 +858,9 @@ return baseclass.extend({
       this.palModes.forEach((cmd) =>
         rows.push(this._palModeRow(cmd, themeNow, null)),
       );
+      if (this.palDockCommand) {
+        rows.push(this._palCustomCommandRow(this.palDockCommand, null));
+      }
       // Logout rides ">" only, last after the modes — a command, not a
       // destination (mirrors luci-theme-aurora's palette).
       if (cmdOnly) {
@@ -861,6 +928,27 @@ return baseclass.extend({
       // Remember the pick, then let the click navigate (router or full
       // load) untouched.
       row.addEventListener("click", () => this._palRecordRecent(page.path));
+    return row;
+  },
+
+  _palCustomCommandRow(cmd, ranges) {
+    const row = E(
+      "button",
+      {
+        class: "cmdk-row cmdk-cmd",
+        type: "button",
+        role: "option",
+        "aria-selected": "false",
+        tabindex: "-1",
+      },
+      [
+        this._iconFile(cmd.iconFile, 15),
+        E("span", { class: "cmdk-title" }, this._palMark(cmd.title, ranges)),
+      ],
+    );
+    row.addEventListener("click", () => {
+      cmd.action();
+    });
     return row;
   },
 
@@ -1058,5 +1146,632 @@ return baseclass.extend({
           el.setAttribute("data-count", n || 0);
         });
     };
+  },
+
+  /* ── Bottom Dock (Floating Navigation Bar) ── */
+
+  _getDockVisibility() {
+    return {
+      desktop: localStorage.getItem(DOCK_DESKTOP_KEY) !== "false",
+      mobile: localStorage.getItem(DOCK_MOBILE_KEY) !== "false",
+    };
+  },
+
+  _saveDockVisibility(visibility) {
+    try {
+      if (visibility && typeof visibility === "object") {
+        if (visibility.desktop !== undefined) {
+          const val = visibility.desktop ? "true" : "false";
+          localStorage.setItem(DOCK_DESKTOP_KEY, val);
+          if (typeof document !== "undefined" && document.documentElement) {
+            document.documentElement.setAttribute("data-dock-desktop", val);
+          }
+        }
+        if (visibility.mobile !== undefined) {
+          const val = visibility.mobile ? "true" : "false";
+          localStorage.setItem(DOCK_MOBILE_KEY, val);
+          if (typeof document !== "undefined" && document.documentElement) {
+            document.documentElement.setAttribute("data-dock-mobile", val);
+          }
+        }
+      }
+    } catch (e) {}
+  },
+
+  _getDockStoredPaths() {
+    try {
+      const raw = localStorage.getItem(DOCK_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.every((p) => typeof p === "string")) {
+        return parsed.slice(0, 5);
+      }
+    } catch (e) {}
+    return null;
+  },
+
+  _saveDockPaths(paths) {
+    try {
+      localStorage.setItem(DOCK_KEY, JSON.stringify((paths || []).slice(0, 5)));
+    } catch (e) {}
+  },
+
+  _resolveDockItems() {
+    const pool = this.palIndex ? this.palIndex.filter((p) => !p.isLogout) : [];
+    const poolMap = new Map(pool.map((p) => [p.path, p]));
+
+    const configured = this._getDockStoredPaths();
+    const result = [];
+
+    // If user has explicitly saved dock items (even 1, 2, 3 items), honor exactly what is checked
+    if (configured !== null) {
+      configured.forEach((path) => {
+        if (poolMap.has(path) && result.length < 5) {
+          result.push(poolMap.get(path));
+        }
+      });
+      return result;
+    }
+
+    // Default resolution when no user configuration exists in localStorage
+    DEFAULT_DOCK_PATHS.forEach((path) => {
+      if (poolMap.has(path) && result.length < 5) {
+        result.push(poolMap.get(path));
+      }
+    });
+
+    // If still less than 5, backfill from available stock menu pages
+    if (result.length < 5) {
+      for (const page of pool) {
+        if (!result.some((r) => r.path === page.path)) {
+          result.push(page);
+          if (result.length >= 5) break;
+        }
+      }
+    }
+
+    return result;
+  },
+
+  renderDock() {
+    // Synchronize HTML attributes for CSS conditional rendering
+    const vis = this._getDockVisibility();
+    document.documentElement.setAttribute(
+      "data-dock-desktop",
+      vis.desktop ? "true" : "false",
+    );
+    document.documentElement.setAttribute(
+      "data-dock-mobile",
+      vis.mobile ? "true" : "false",
+    );
+
+    let dock = document.getElementById("bottom-dock");
+    if (!dock) {
+      dock = E("nav", {
+        id: "bottom-dock",
+        class: "bottom-dock",
+        "aria-label": _("Quick Navigation"),
+      });
+      const wrapper = document.getElementById("main-wrapper") || document.body;
+      wrapper.appendChild(dock);
+    }
+
+    dock.innerHTML = "";
+    const items = this._resolveDockItems();
+    const path = new URL(
+      L.url(...(L.env.dispatchpath || []).slice(0, 3)),
+      location.href,
+    ).pathname;
+
+    items.forEach((item) => {
+      const itemUrl = new URL(item.href, location.href).pathname;
+      const isActive =
+        path === itemUrl || (path.startsWith(itemUrl + "/") && itemUrl !== "/");
+      const el = E(
+        "a",
+        {
+          class: "dock-item" + (isActive ? " active" : ""),
+          href: item.href,
+          "aria-label": item.title,
+          "data-dock-path": item.path,
+        },
+        [
+          E("span", { class: "dock-icon", "aria-hidden": "true" }, [
+            this._sectionIcon(item.icon, 22),
+          ]),
+          E("span", { class: "dock-label" }, [item.title]),
+        ],
+      );
+
+      el.addEventListener("click", () => {
+        window.ShadcnSidebar?.closeDrawer?.();
+      });
+
+      dock.appendChild(el);
+    });
+  },
+
+  // Backwards compatibility alias
+  renderMobileDock() {
+    this.renderDock();
+  },
+
+  syncDockRoute() {
+    const dock = document.getElementById("bottom-dock");
+    if (!dock) return;
+
+    const path = new URL(
+      L.url(...(L.env.dispatchpath || []).slice(0, 3)),
+      location.href,
+    ).pathname;
+
+    dock.querySelectorAll(".dock-item").forEach((el) => {
+      const itemUrl = new URL(el.getAttribute("href"), location.href).pathname;
+      const isActive =
+        path === itemUrl || (path.startsWith(itemUrl + "/") && itemUrl !== "/");
+      el.classList.toggle("active", Boolean(isActive));
+    });
+  },
+
+  /* ── Dock Customizer Modal ── */
+
+  openDockCustomizer() {
+    if (!this.dockOverlay) this._buildDockCustomizer();
+    const from = document.activeElement;
+    this.dockReturn =
+      from && from !== document.body && !this.dockOverlay.contains(from)
+        ? from
+        : null;
+    this.dockOverlay.hidden = false;
+    this._renderDockCustomizer();
+    this.dockSearchInput?.focus();
+  },
+
+  _hasDockCustomizerChanges() {
+    const origPaths = this._resolveDockItems().map((i) => i.path);
+    const origVis = this._getDockVisibility();
+
+    const pathsChanged =
+      this._dockDraft.length !== origPaths.length ||
+      this._dockDraft.some((path, i) => path !== origPaths[i]);
+
+    const visChanged =
+      Boolean(this._dockVisDraft?.desktop) !== Boolean(origVis.desktop) ||
+      Boolean(this._dockVisDraft?.mobile) !== Boolean(origVis.mobile);
+
+    return pathsChanged || visChanged;
+  },
+
+  closeDockCustomizer(force = false) {
+    if (!this.dockOverlay || this.dockOverlay.hidden) return;
+
+    if (!force && this._hasDockCustomizerChanges()) {
+      if (
+        !confirm(
+          _(
+            "You have unsaved changes to your dock configuration. Close without saving?",
+          ),
+        )
+      ) {
+        return;
+      }
+    }
+
+    this.dockOverlay.hidden = true;
+    if (this.dockSearchInput) this.dockSearchInput.value = "";
+    const back = this.dockReturn;
+    this.dockReturn = null;
+    if (back && back.isConnected) back.focus();
+  },
+
+  _buildDockCustomizer() {
+    this.dockSearchInput = E("input", {
+      type: "text",
+      placeholder: _("Filter menu items…"),
+      "aria-label": _("Filter menu items…"),
+      autocomplete: "off",
+    });
+
+    this.dockModalList = E("div", { class: "dock-modal-list" });
+
+    this.dockSelectedBadge = E("span", { class: "dock-modal-subtitle" }, [
+      "0 / 5",
+    ]);
+
+    this.dockSelectedBar = E("div", { class: "dock-modal-selected-bar" });
+
+    const closeBtn = E(
+      "button",
+      {
+        class: "btn btn-secondary",
+        type: "button",
+      },
+      [_("Cancel")],
+    );
+    closeBtn.addEventListener("click", () => this.closeDockCustomizer());
+
+    const resetBtn = E(
+      "button",
+      {
+        class: "btn btn-secondary",
+        type: "button",
+      },
+      [_("Reset")],
+    );
+    resetBtn.addEventListener("click", () => {
+      try {
+        localStorage.removeItem(DOCK_KEY);
+        localStorage.removeItem(DOCK_DESKTOP_KEY);
+        localStorage.removeItem(DOCK_MOBILE_KEY);
+      } catch (e) {}
+      this._dockDraft = [...DEFAULT_DOCK_PATHS];
+      this._dockVisDraft = { desktop: true, mobile: true };
+      this._updateDockSwitchState();
+      this._renderDockCustomizerList();
+    });
+
+    const saveBtn = E(
+      "button",
+      {
+        class: "btn btn-primary",
+        type: "button",
+      },
+      [_("Save")],
+    );
+    saveBtn.addEventListener("click", () => {
+      this._saveDockPaths(this._dockDraft);
+      this._saveDockVisibility(this._dockVisDraft);
+      this.closeDockCustomizer(true);
+      this.renderDock();
+    });
+
+    // Custom switch buttons (direct onclick state mutation)
+    this.dockDesktopThumb = E("span", { class: "dock-switch-thumb" });
+    this.dockDesktopBtn = E(
+      "button",
+      {
+        type: "button",
+        role: "switch",
+        class: "dock-switch",
+        "aria-checked": "true",
+        "aria-label": _("Show on Desktop"),
+      },
+      [this.dockDesktopThumb],
+    );
+
+    this.dockMobileThumb = E("span", { class: "dock-switch-thumb" });
+    this.dockMobileBtn = E(
+      "button",
+      {
+        type: "button",
+        role: "switch",
+        class: "dock-switch",
+        "aria-checked": "true",
+        "aria-label": _("Show on Mobile"),
+      },
+      [this.dockMobileThumb],
+    );
+
+    const toggleDesktop = () => {
+      this._dockVisDraft.desktop = !this._dockVisDraft.desktop;
+      this._updateDockSwitchState();
+    };
+
+    const toggleMobile = () => {
+      this._dockVisDraft.mobile = !this._dockVisDraft.mobile;
+      this._updateDockSwitchState();
+    };
+
+    const desktopRow = E("div", { class: "dock-toggle-item" }, [
+      E("div", { class: "dock-toggle-text" }, [
+        E("span", { class: "dock-toggle-title" }, [_("Show on Desktop")]),
+        E("span", { class: "dock-toggle-desc" }, [
+          _("Display bottom dock on wide screens"),
+        ]),
+      ]),
+      this.dockDesktopBtn,
+    ]);
+    desktopRow.addEventListener("click", toggleDesktop);
+
+    const mobileRow = E("div", { class: "dock-toggle-item" }, [
+      E("div", { class: "dock-toggle-text" }, [
+        E("span", { class: "dock-toggle-title" }, [_("Show on Mobile")]),
+        E("span", { class: "dock-toggle-desc" }, [
+          _("Display bottom dock on mobile viewports"),
+        ]),
+      ]),
+      this.dockMobileBtn,
+    ]);
+    mobileRow.addEventListener("click", toggleMobile);
+
+    const togglesSection = E("div", { class: "dock-modal-toggles" }, [
+      desktopRow,
+      mobileRow,
+    ]);
+
+    const titleId = "dock-modal-title";
+    const panel = E(
+      "div",
+      {
+        class: "dock-modal-panel",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": titleId,
+      },
+      [
+        E("div", { class: "dock-modal-header" }, [
+          E("div", {}, [
+            E("div", { id: titleId, class: "dock-modal-title" }, [
+              _("Customize Bottom Dock"),
+            ]),
+            this.dockSelectedBadge,
+          ]),
+        ]),
+        togglesSection,
+        this.dockSelectedBar,
+        E("div", { class: "dock-modal-search" }, [this.dockSearchInput]),
+        this.dockModalList,
+        E("div", { class: "dock-modal-footer" }, [
+          resetBtn,
+          E("div", { class: "dock-modal-actions" }, [closeBtn, saveBtn]),
+        ]),
+      ],
+    );
+
+    panel.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        this.closeDockCustomizer();
+      }
+    });
+
+    this.dockOverlay = E(
+      "div",
+      {
+        id: "dock-modal-overlay",
+        class: "dock-modal-overlay",
+      },
+      [panel],
+    );
+
+    this.dockOverlay.addEventListener("click", (e) => {
+      if (e.target === this.dockOverlay) this.closeDockCustomizer();
+    });
+
+    this.dockSearchInput.addEventListener("input", () => {
+      this._renderDockCustomizerList();
+    });
+
+    document.body.appendChild(this.dockOverlay);
+  },
+
+  _updateDockSwitchState() {
+    if (this.dockDesktopBtn) {
+      const isDesk = Boolean(this._dockVisDraft?.desktop);
+      this.dockDesktopBtn.setAttribute(
+        "data-checked",
+        isDesk ? "true" : "false",
+      );
+      this.dockDesktopBtn.setAttribute(
+        "aria-checked",
+        isDesk ? "true" : "false",
+      );
+    }
+    if (this.dockMobileBtn) {
+      const isMob = Boolean(this._dockVisDraft?.mobile);
+      this.dockMobileBtn.setAttribute("data-checked", isMob ? "true" : "false");
+      this.dockMobileBtn.setAttribute("aria-checked", isMob ? "true" : "false");
+    }
+  },
+
+  _renderDockCustomizer() {
+    const current = this._resolveDockItems().map((i) => i.path);
+    this._dockDraft = [...current];
+    this._dockVisDraft = this._getDockVisibility();
+    this._updateDockSwitchState();
+    this._renderDockCustomizerList();
+  },
+
+  _renderDockCustomizerList() {
+    const q = (this.dockSearchInput.value || "").trim().toLowerCase();
+    const pool = this.palIndex ? this.palIndex.filter((p) => !p.isLogout) : [];
+    this.dockSelectedBadge.textContent = `${this._dockDraft.length} / 5 ${_("Selected")}`;
+
+    // Render active chips bar at the top with left/right reorder and remove
+    const chips = [];
+    if (this._dockDraft.length === 0) {
+      chips.push(
+        E("span", { class: "dock-chip-empty" }, [_("No items selected")]),
+      );
+    } else {
+      this._dockDraft.forEach((path, idx) => {
+        const item = pool.find((p) => p.path === path);
+        if (!item) return;
+
+        const leftBtn = E(
+          "button",
+          {
+            class: "dock-chip-reorder",
+            type: "button",
+            "aria-label": _("Move left"),
+            disabled: idx === 0 ? "disabled" : undefined,
+          },
+          ["‹"],
+        );
+        leftBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (idx > 0) {
+            const temp = this._dockDraft[idx - 1];
+            this._dockDraft[idx - 1] = this._dockDraft[idx];
+            this._dockDraft[idx] = temp;
+            this._renderDockCustomizerList();
+          }
+        });
+
+        const rightBtn = E(
+          "button",
+          {
+            class: "dock-chip-reorder",
+            type: "button",
+            "aria-label": _("Move right"),
+            disabled:
+              idx === this._dockDraft.length - 1 ? "disabled" : undefined,
+          },
+          ["›"],
+        );
+        rightBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (idx < this._dockDraft.length - 1) {
+            const temp = this._dockDraft[idx + 1];
+            this._dockDraft[idx + 1] = this._dockDraft[idx];
+            this._dockDraft[idx] = temp;
+            this._renderDockCustomizerList();
+          }
+        });
+
+        const removeBtn = E("button", {
+          class: "dock-chip-remove",
+          type: "button",
+          "aria-label": _("Remove"),
+        });
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const targetIdx = this._dockDraft.indexOf(path);
+          if (targetIdx >= 0) {
+            this._dockDraft.splice(targetIdx, 1);
+            this._renderDockCustomizerList();
+          }
+        });
+
+        chips.push(
+          E("div", { class: "dock-chip" }, [
+            leftBtn,
+            this._sectionIcon(item.icon, 14),
+            E("span", {}, [item.title]),
+            rightBtn,
+            removeBtn,
+          ]),
+        );
+      });
+    }
+    this.dockSelectedBar.replaceChildren(...chips);
+
+    const rows = [];
+
+    // All available menu items matching query
+    pool.forEach((item) => {
+      const idx = this._dockDraft.indexOf(item.path);
+      const isSelected = idx >= 0;
+      const matches =
+        !q ||
+        item.title.toLowerCase().includes(q) ||
+        (item.group && item.group.toLowerCase().includes(q)) ||
+        item.path.toLowerCase().includes(q);
+
+      if (matches) {
+        const actionNodes = [];
+
+        // Up/Down reorder controls directly inside row for convenient mobile sorting
+        if (isSelected) {
+          const upBtn = E(
+            "button",
+            {
+              class: "dock-order-btn",
+              type: "button",
+              title: _("Move Up"),
+              "aria-label": _("Move Up"),
+              disabled: idx === 0 ? "disabled" : undefined,
+            },
+            ["▲"],
+          );
+          upBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (idx > 0) {
+              const temp = this._dockDraft[idx - 1];
+              this._dockDraft[idx - 1] = this._dockDraft[idx];
+              this._dockDraft[idx] = temp;
+              this._renderDockCustomizerList();
+            }
+          });
+
+          const downBtn = E(
+            "button",
+            {
+              class: "dock-order-btn",
+              type: "button",
+              title: _("Move Down"),
+              "aria-label": _("Move Down"),
+              disabled:
+                idx === this._dockDraft.length - 1 ? "disabled" : undefined,
+            },
+            ["▼"],
+          );
+          downBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (idx < this._dockDraft.length - 1) {
+              const temp = this._dockDraft[idx + 1];
+              this._dockDraft[idx + 1] = this._dockDraft[idx];
+              this._dockDraft[idx] = temp;
+              this._renderDockCustomizerList();
+            }
+          });
+
+          const orderNum = E(
+            "span",
+            {
+              class: "dock-order-badge",
+              title: _("Order Position"),
+            },
+            [`#${idx + 1}`],
+          );
+
+          const controlGroup = E("div", { class: "dock-order-control" }, [
+            upBtn,
+            orderNum,
+            downBtn,
+          ]);
+
+          actionNodes.push(controlGroup);
+        }
+
+        actionNodes.push(E("span", { class: "dock-checkbox" }));
+
+        const row = E(
+          "div",
+          {
+            class:
+              "dock-modal-row" +
+              (isSelected ? " selected" : "") +
+              (!isSelected && this._dockDraft.length >= 5 ? " disabled" : ""),
+          },
+          [
+            E("div", { class: "dock-row-left" }, [
+              this._sectionIcon(item.icon, 18),
+              E("div", { class: "dock-row-text" }, [
+                E("div", { class: "dock-row-title" }, [item.title]),
+                item.group
+                  ? E("div", { class: "dock-row-group" }, [item.group])
+                  : "",
+              ]),
+            ]),
+            E("div", { class: "dock-row-actions" }, actionNodes),
+          ],
+        );
+
+        row.addEventListener("click", () => {
+          const currentIdx = this._dockDraft.indexOf(item.path);
+          if (currentIdx >= 0) {
+            this._dockDraft.splice(currentIdx, 1);
+          } else if (this._dockDraft.length < 5) {
+            this._dockDraft.push(item.path);
+          }
+          this._renderDockCustomizerList();
+        });
+
+        rows.push(row);
+      }
+    });
+
+    this.dockModalList.replaceChildren(...rows);
   },
 });

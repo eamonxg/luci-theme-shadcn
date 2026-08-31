@@ -37,6 +37,7 @@
 @import "./components/_form.css";
 @import "./components/_tabs.css";
 @import "./components/_palette.css";
+@import "./components/_dock.css";
 @import "./components/_view-transitions.css";
 @import "./components/_router.css";
 @import "./_utilities.css";

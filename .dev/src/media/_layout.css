@@ -4,7 +4,7 @@
   /* Width only: `transition-all` would also ease background-color, making the
      sidebar lag a beat behind the untransitioned content area on theme flips. */
   @apply bg-sidebar-bg flex h-full w-[220px] shrink-0 flex-col overflow-hidden transition-[width] duration-200;
-  @apply max-md:fixed max-md:top-0 max-md:left-0 max-md:z-40 max-md:w-[240px] max-md:-translate-x-full max-md:shadow-xl max-md:transition-transform;
+  @apply max-md:fixed max-md:top-0 max-md:left-0 max-md:z-50 max-md:w-[260px] max-md:-translate-x-full max-md:shadow-2xl max-md:transition-transform;
   /* Drawer height tracks the dynamic viewport so its bottom edge meets the
      Safari toolbar smoothly instead of jumping when the toolbar shows/hides. */
   @apply max-md:h-dvh;
@@ -192,8 +192,28 @@ html[data-sidebar-collapsed="true"] #sidebar {
 /* ── Sidebar footer ───────────────────────────────────────────────── */
 
 .sidebar-footer {
-  @apply border-sidebar-border shrink-0 border-t p-2;
-  @apply pb-[max(0.5rem,env(safe-area-inset-bottom))];
+  @apply border-sidebar-border flex shrink-0 flex-col gap-0.5 border-t p-2;
+  @apply pb-[max(0.75rem,env(safe-area-inset-bottom))];
+
+  .sidebar-dock-config-btn {
+    @apply text-sidebar-muted flex w-full cursor-pointer items-center gap-2.5 rounded-md border-0 bg-transparent px-2 py-1.5 text-left text-sm transition-colors;
+
+    &:hover {
+      @apply bg-sidebar-accent text-sidebar-accent-fg;
+    }
+
+    .sidebar-icon {
+      @apply flex shrink-0 items-center justify-center;
+      svg,
+      img {
+        @apply h-4 w-4;
+      }
+    }
+
+    .sidebar-label {
+      @apply flex-1 truncate;
+    }
+  }
 }
 
 .sidebar-logout {
@@ -428,7 +448,7 @@ span[data-indicator] {
 #sidebar-overlay {
   /* Absolute, not fixed: iOS Safari 26 tints its bars from edge-touching
      fixed elements' background-color, opacity notwithstanding. */
-  @apply bg-overlay-base-a50 pointer-events-none absolute inset-0 z-30 opacity-0 transition-opacity duration-200 md:hidden;
+  @apply bg-overlay-base-a50 pointer-events-none fixed inset-0 z-45 opacity-0 transition-opacity duration-200 md:hidden;
 
   &.active {
     @apply pointer-events-auto opacity-100;
