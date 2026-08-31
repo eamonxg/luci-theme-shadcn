@@ -308,7 +308,7 @@ return baseclass.extend({
 
   closeSurfaces() {
     this.closePalette();
-    this.closeDockCustomizer();
+    this.closeDockCustomizer(true);
     window.ShadcnSidebar?.closeDrawer?.();
     window.ShadcnSidebar?._hideCollapsedPopover?.();
   },
@@ -1161,27 +1161,17 @@ return baseclass.extend({
     try {
       if (visibility && typeof visibility === "object") {
         if (visibility.desktop !== undefined) {
-          localStorage.setItem(
-            DOCK_DESKTOP_KEY,
-            visibility.desktop ? "true" : "false",
-          );
+          const val = visibility.desktop ? "true" : "false";
+          localStorage.setItem(DOCK_DESKTOP_KEY, val);
           if (typeof document !== "undefined" && document.documentElement) {
-            document.documentElement.setAttribute(
-              "data-dock-desktop",
-              visibility.desktop ? "true" : "false",
-            );
+            document.documentElement.setAttribute("data-dock-desktop", val);
           }
         }
         if (visibility.mobile !== undefined) {
-          localStorage.setItem(
-            DOCK_MOBILE_KEY,
-            visibility.mobile ? "true" : "false",
-          );
+          const val = visibility.mobile ? "true" : "false";
+          localStorage.setItem(DOCK_MOBILE_KEY, val);
           if (typeof document !== "undefined" && document.documentElement) {
-            document.documentElement.setAttribute(
-              "data-dock-mobile",
-              visibility.mobile ? "true" : "false",
-            );
+            document.documentElement.setAttribute("data-dock-mobile", val);
           }
         }
       }
@@ -1337,8 +1327,36 @@ return baseclass.extend({
     this.dockSearchInput?.focus();
   },
 
-  closeDockCustomizer() {
+  _hasDockCustomizerChanges() {
+    const origPaths = this._resolveDockItems().map((i) => i.path);
+    const origVis = this._getDockVisibility();
+
+    const pathsChanged =
+      this._dockDraft.length !== origPaths.length ||
+      this._dockDraft.some((path, i) => path !== origPaths[i]);
+
+    const visChanged =
+      Boolean(this._dockVisDraft?.desktop) !== Boolean(origVis.desktop) ||
+      Boolean(this._dockVisDraft?.mobile) !== Boolean(origVis.mobile);
+
+    return pathsChanged || visChanged;
+  },
+
+  closeDockCustomizer(force = false) {
     if (!this.dockOverlay || this.dockOverlay.hidden) return;
+
+    if (!force && this._hasDockCustomizerChanges()) {
+      if (
+        !confirm(
+          _(
+            "You have unsaved changes to your dock configuration. Close without saving?",
+          ),
+        )
+      ) {
+        return;
+      }
+    }
+
     this.dockOverlay.hidden = true;
     if (this.dockSearchInput) this.dockSearchInput.value = "";
     const back = this.dockReturn;
@@ -1388,8 +1406,7 @@ return baseclass.extend({
       } catch (e) {}
       this._dockDraft = [...DEFAULT_DOCK_PATHS];
       this._dockVisDraft = { desktop: true, mobile: true };
-      if (this.dockDesktopToggle) this.dockDesktopToggle.checked = true;
-      if (this.dockMobileToggle) this.dockMobileToggle.checked = true;
+      this._updateDockSwitchState();
       this._renderDockCustomizerList();
     });
 
@@ -1404,54 +1421,72 @@ return baseclass.extend({
     saveBtn.addEventListener("click", () => {
       this._saveDockPaths(this._dockDraft);
       this._saveDockVisibility(this._dockVisDraft);
-      this.closeDockCustomizer();
+      this.closeDockCustomizer(true);
       this.renderDock();
     });
 
-    // Visibility toggles for desktop & mobile
-    this.dockDesktopToggle = E("input", {
-      type: "checkbox",
-      class: "dock-switch-input",
-      id: "dock-toggle-desktop",
-    });
-    this.dockDesktopToggle.addEventListener("change", (e) => {
-      this._dockVisDraft.desktop = e.target.checked;
-    });
+    // Custom switch buttons (direct onclick state mutation)
+    this.dockDesktopThumb = E("span", { class: "dock-switch-thumb" });
+    this.dockDesktopBtn = E(
+      "button",
+      {
+        type: "button",
+        role: "switch",
+        class: "dock-switch",
+        "aria-checked": "true",
+        "aria-label": _("Show on Desktop"),
+      },
+      [this.dockDesktopThumb],
+    );
 
-    this.dockMobileToggle = E("input", {
-      type: "checkbox",
-      class: "dock-switch-input",
-      id: "dock-toggle-mobile",
-    });
-    this.dockMobileToggle.addEventListener("change", (e) => {
-      this._dockVisDraft.mobile = e.target.checked;
-    });
+    this.dockMobileThumb = E("span", { class: "dock-switch-thumb" });
+    this.dockMobileBtn = E(
+      "button",
+      {
+        type: "button",
+        role: "switch",
+        class: "dock-switch",
+        "aria-checked": "true",
+        "aria-label": _("Show on Mobile"),
+      },
+      [this.dockMobileThumb],
+    );
+
+    const toggleDesktop = () => {
+      this._dockVisDraft.desktop = !this._dockVisDraft.desktop;
+      this._updateDockSwitchState();
+    };
+
+    const toggleMobile = () => {
+      this._dockVisDraft.mobile = !this._dockVisDraft.mobile;
+      this._updateDockSwitchState();
+    };
+
+    const desktopRow = E("div", { class: "dock-toggle-item" }, [
+      E("div", { class: "dock-toggle-text" }, [
+        E("span", { class: "dock-toggle-title" }, [_("Show on Desktop")]),
+        E("span", { class: "dock-toggle-desc" }, [
+          _("Display bottom dock on wide screens"),
+        ]),
+      ]),
+      this.dockDesktopBtn,
+    ]);
+    desktopRow.addEventListener("click", toggleDesktop);
+
+    const mobileRow = E("div", { class: "dock-toggle-item" }, [
+      E("div", { class: "dock-toggle-text" }, [
+        E("span", { class: "dock-toggle-title" }, [_("Show on Mobile")]),
+        E("span", { class: "dock-toggle-desc" }, [
+          _("Display bottom dock on mobile viewports"),
+        ]),
+      ]),
+      this.dockMobileBtn,
+    ]);
+    mobileRow.addEventListener("click", toggleMobile);
 
     const togglesSection = E("div", { class: "dock-modal-toggles" }, [
-      E("label", { class: "dock-toggle-item", for: "dock-toggle-desktop" }, [
-        E("div", { class: "dock-toggle-text" }, [
-          E("span", { class: "dock-toggle-title" }, [_("Show on Desktop")]),
-          E("span", { class: "dock-toggle-desc" }, [
-            _("Display bottom dock on wide screens"),
-          ]),
-        ]),
-        E("span", { class: "dock-switch" }, [
-          this.dockDesktopToggle,
-          E("span", { class: "dock-switch-slider" }),
-        ]),
-      ]),
-      E("label", { class: "dock-toggle-item", for: "dock-toggle-mobile" }, [
-        E("div", { class: "dock-toggle-text" }, [
-          E("span", { class: "dock-toggle-title" }, [_("Show on Mobile")]),
-          E("span", { class: "dock-toggle-desc" }, [
-            _("Display bottom dock on mobile viewports"),
-          ]),
-        ]),
-        E("span", { class: "dock-switch" }, [
-          this.dockMobileToggle,
-          E("span", { class: "dock-switch-slider" }),
-        ]),
-      ]),
+      desktopRow,
+      mobileRow,
     ]);
 
     const titleId = "dock-modal-title";
@@ -1510,16 +1545,30 @@ return baseclass.extend({
     document.body.appendChild(this.dockOverlay);
   },
 
+  _updateDockSwitchState() {
+    if (this.dockDesktopBtn) {
+      const isDesk = Boolean(this._dockVisDraft?.desktop);
+      this.dockDesktopBtn.setAttribute(
+        "data-checked",
+        isDesk ? "true" : "false",
+      );
+      this.dockDesktopBtn.setAttribute(
+        "aria-checked",
+        isDesk ? "true" : "false",
+      );
+    }
+    if (this.dockMobileBtn) {
+      const isMob = Boolean(this._dockVisDraft?.mobile);
+      this.dockMobileBtn.setAttribute("data-checked", isMob ? "true" : "false");
+      this.dockMobileBtn.setAttribute("aria-checked", isMob ? "true" : "false");
+    }
+  },
+
   _renderDockCustomizer() {
     const current = this._resolveDockItems().map((i) => i.path);
     this._dockDraft = [...current];
     this._dockVisDraft = this._getDockVisibility();
-    if (this.dockDesktopToggle) {
-      this.dockDesktopToggle.checked = this._dockVisDraft.desktop;
-    }
-    if (this.dockMobileToggle) {
-      this.dockMobileToggle.checked = this._dockVisDraft.mobile;
-    }
+    this._updateDockSwitchState();
     this._renderDockCustomizerList();
   },
 

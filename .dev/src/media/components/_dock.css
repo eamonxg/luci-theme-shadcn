@@ -127,6 +127,7 @@ html:not([data-dock-mobile="false"]) #maincontent {
 
 .dock-toggle-item {
   @apply flex cursor-pointer items-center justify-between gap-3;
+  user-select: none;
 
   .dock-toggle-text {
     @apply flex min-w-0 flex-col;
@@ -142,26 +143,18 @@ html:not([data-dock-mobile="false"]) #maincontent {
 }
 
 .dock-switch {
-  @apply relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors;
+  @apply bg-muted relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors;
 
-  .dock-switch-input {
-    @apply sr-only;
-  }
-
-  .dock-switch-slider {
-    @apply bg-muted absolute inset-0 rounded-full transition-colors;
-
-    &::before {
-      @apply absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-sm transition-transform content-[''];
-    }
-  }
-
-  .dock-switch-input:checked + .dock-switch-slider {
+  &[data-checked="true"] {
     @apply bg-primary;
 
-    &::before {
+    .dock-switch-thumb {
       @apply translate-x-4;
     }
+  }
+
+  .dock-switch-thumb {
+    @apply absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-sm transition-transform;
   }
 }
 
