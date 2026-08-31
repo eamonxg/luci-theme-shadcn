@@ -53,6 +53,8 @@ const loadMenuModule = (localStorage = {}) => {
 };
 
 const DOCK_KEY = "shadcn.dock.items";
+const DOCK_DESKTOP_KEY = "shadcn.dock.desktop";
+const DOCK_MOBILE_KEY = "shadcn.dock.mobile";
 
 const fakeStorage = (initial = {}) => {
   const map = new Map(Object.entries(initial));
@@ -173,4 +175,34 @@ test("dock saves paths safely with max 5 slice", () => {
   const saved = JSON.parse(storage.map.get(DOCK_KEY));
   assert.equal(saved.length, 5);
   assert.equal(saved[4], "admin/status/realtime");
+});
+
+test("dock reads visibility settings with default true", () => {
+  const storage = fakeStorage();
+  const menu = loadMenuModule(storage);
+
+  const vis = menu._getDockVisibility();
+  assert.equal(vis.desktop, true);
+  assert.equal(vis.mobile, true);
+});
+
+test("dock reads saved visibility false for desktop and mobile", () => {
+  const storage = fakeStorage({
+    [DOCK_DESKTOP_KEY]: "false",
+    [DOCK_MOBILE_KEY]: "false",
+  });
+  const menu = loadMenuModule(storage);
+
+  const vis = menu._getDockVisibility();
+  assert.equal(vis.desktop, false);
+  assert.equal(vis.mobile, false);
+});
+
+test("dock saves visibility settings correctly", () => {
+  const storage = fakeStorage();
+  const menu = loadMenuModule(storage);
+
+  menu._saveDockVisibility({ desktop: false, mobile: true });
+  assert.equal(storage.map.get(DOCK_DESKTOP_KEY), "false");
+  assert.equal(storage.map.get(DOCK_MOBILE_KEY), "true");
 });

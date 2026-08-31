@@ -1,20 +1,42 @@
 /**
- * Mobile Bottom Floating Dock (<= 5 items) and Customizer Modal.
- * Appears only on mobile (< md).
+ * Bottom Floating Navigation Dock (<= 5 items) and Customizer Modal.
+ * Appears on desktop and mobile according to user preferences.
  */
 
 /* ── Floating Dock Container ───────────────────────────────────────── */
 
+#bottom-dock,
 #mobile-dock {
-  @apply fixed bottom-[calc(0.85rem+env(safe-area-inset-bottom))] left-1/2 z-40 hidden -translate-x-1/2 items-center justify-around gap-1 rounded-full border px-2.5 py-2 shadow-2xl max-md:flex;
+  @apply fixed bottom-[calc(0.85rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex -translate-x-1/2 items-center justify-around gap-1 rounded-full border px-2.5 py-2 shadow-2xl;
   @apply border-panel-border bg-panel-bg backdrop-blur-md;
   @apply min-h-[60px] w-[min(calc(100vw-1.5rem),390px)] transition-all duration-200;
   touch-action: manipulation;
   user-select: none;
 }
 
+/* Visibility based on html attributes */
+html[data-dock-desktop="false"] #bottom-dock,
+html[data-dock-desktop="false"] #mobile-dock {
+  @apply md:!hidden;
+}
+
+html[data-dock-mobile="false"] #bottom-dock,
+html[data-dock-mobile="false"] #mobile-dock {
+  @apply max-md:!hidden;
+}
+
+html:has(#sidebar[data-drawer-open="true"]) #bottom-dock,
 html:has(#sidebar[data-drawer-open="true"]) #mobile-dock {
-  @apply max-md:hidden;
+  @apply max-md:!hidden;
+}
+
+/* Add bottom padding to #maincontent when dock is visible so fixed buttons / forms are clear */
+html:not([data-dock-desktop="false"]) #maincontent {
+  @apply md:pb-24;
+}
+
+html:not([data-dock-mobile="false"]) #maincontent {
+  @apply max-md:pb-24;
 }
 
 .dock-item {
@@ -53,7 +75,6 @@ html:has(#sidebar[data-drawer-open="true"]) #mobile-dock {
 
 .sidebar-dock-config-btn {
   @apply text-sidebar-muted flex w-full cursor-pointer items-center gap-2.5 rounded-md border-0 bg-transparent px-2 py-1.5 text-left text-sm transition-colors;
-  @apply max-md:flex;
 
   &:hover {
     @apply bg-sidebar-accent text-sidebar-accent-fg;
@@ -95,6 +116,52 @@ html:has(#sidebar[data-drawer-open="true"]) #mobile-dock {
 
   .dock-modal-subtitle {
     @apply text-muted-foreground text-xs;
+  }
+}
+
+/* ── Modal Toggles Section ─────────────────────────────────────────── */
+
+.dock-modal-toggles {
+  @apply border-panel-border bg-background-a60 flex flex-col gap-2 border-b px-4 py-3;
+}
+
+.dock-toggle-item {
+  @apply flex cursor-pointer items-center justify-between gap-3;
+
+  .dock-toggle-text {
+    @apply flex min-w-0 flex-col;
+  }
+
+  .dock-toggle-title {
+    @apply text-foreground text-xs font-semibold;
+  }
+
+  .dock-toggle-desc {
+    @apply text-muted-foreground text-[11px];
+  }
+}
+
+.dock-switch {
+  @apply relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors;
+
+  .dock-switch-input {
+    @apply sr-only;
+  }
+
+  .dock-switch-slider {
+    @apply bg-muted absolute inset-0 rounded-full transition-colors;
+
+    &::before {
+      @apply absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-sm transition-transform content-[''];
+    }
+  }
+
+  .dock-switch-input:checked + .dock-switch-slider {
+    @apply bg-primary;
+
+    &::before {
+      @apply translate-x-4;
+    }
   }
 }
 

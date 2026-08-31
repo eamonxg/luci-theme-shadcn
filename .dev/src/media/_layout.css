@@ -374,7 +374,7 @@ span[data-indicator] {
 /* ── Maincontent ──────────────────────────────────────────────────── */
 
 #maincontent {
-  @apply flex-1 overflow-y-auto p-6 max-md:p-4 max-md:pb-24;
+  @apply flex-1 overflow-y-auto p-6 max-md:p-4;
 
   h1 {
     @apply mb-4 border-0 pl-0 text-2xl font-semibold tracking-tight;

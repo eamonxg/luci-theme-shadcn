@@ -37,8 +37,10 @@ const CACHE_KEY = "shadcn.sidebar.cache";
 /** localStorage key for the palette's most-recently-used page paths */
 const RECENTS_KEY = "shadcn.palette.recents";
 
-/** localStorage key for user customized mobile dock item paths (max 5) */
+/** localStorage keys for dock items and visibility toggles */
 const DOCK_KEY = "shadcn.dock.items";
+const DOCK_DESKTOP_KEY = "shadcn.dock.desktop";
+const DOCK_MOBILE_KEY = "shadcn.dock.mobile";
 
 /** Default fallback paths for the mobile dock in stock OpenWrt */
 const DEFAULT_DOCK_PATHS = [
@@ -217,7 +219,7 @@ return baseclass.extend({
     this.renderBreadcrumb(branch, branchUrl);
     this.initPalette(branch, branchUrl);
     this.renderTabs(tree);
-    this.renderMobileDock();
+    this.renderDock();
     this.cacheSidebar();
   },
 
@@ -1146,7 +1148,45 @@ return baseclass.extend({
     };
   },
 
-  /* ── Mobile Dock (Floating Bottom Navbar) ── */
+  /* ── Bottom Dock (Floating Navigation Bar) ── */
+
+  _getDockVisibility() {
+    return {
+      desktop: localStorage.getItem(DOCK_DESKTOP_KEY) !== "false",
+      mobile: localStorage.getItem(DOCK_MOBILE_KEY) !== "false",
+    };
+  },
+
+  _saveDockVisibility(visibility) {
+    try {
+      if (visibility && typeof visibility === "object") {
+        if (visibility.desktop !== undefined) {
+          localStorage.setItem(
+            DOCK_DESKTOP_KEY,
+            visibility.desktop ? "true" : "false",
+          );
+          if (typeof document !== "undefined" && document.documentElement) {
+            document.documentElement.setAttribute(
+              "data-dock-desktop",
+              visibility.desktop ? "true" : "false",
+            );
+          }
+        }
+        if (visibility.mobile !== undefined) {
+          localStorage.setItem(
+            DOCK_MOBILE_KEY,
+            visibility.mobile ? "true" : "false",
+          );
+          if (typeof document !== "undefined" && document.documentElement) {
+            document.documentElement.setAttribute(
+              "data-dock-mobile",
+              visibility.mobile ? "true" : "false",
+            );
+          }
+        }
+      }
+    } catch (e) {}
+  },
 
   _getDockStoredPaths() {
     try {
@@ -1203,12 +1243,23 @@ return baseclass.extend({
     return result;
   },
 
-  renderMobileDock() {
-    let dock = document.getElementById("mobile-dock");
+  renderDock() {
+    // Synchronize HTML attributes for CSS conditional rendering
+    const vis = this._getDockVisibility();
+    document.documentElement.setAttribute(
+      "data-dock-desktop",
+      vis.desktop ? "true" : "false",
+    );
+    document.documentElement.setAttribute(
+      "data-dock-mobile",
+      vis.mobile ? "true" : "false",
+    );
+
+    let dock = document.getElementById("bottom-dock");
     if (!dock) {
       dock = E("nav", {
-        id: "mobile-dock",
-        class: "mobile-dock",
+        id: "bottom-dock",
+        class: "bottom-dock",
         "aria-label": _("Quick Navigation"),
       });
       const wrapper = document.getElementById("main-wrapper") || document.body;
@@ -1250,8 +1301,13 @@ return baseclass.extend({
     });
   },
 
+  // Backwards compatibility alias
+  renderMobileDock() {
+    this.renderDock();
+  },
+
   syncDockRoute() {
-    const dock = document.getElementById("mobile-dock");
+    const dock = document.getElementById("bottom-dock");
     if (!dock) return;
 
     const path = new URL(
@@ -1327,8 +1383,13 @@ return baseclass.extend({
     resetBtn.addEventListener("click", () => {
       try {
         localStorage.removeItem(DOCK_KEY);
+        localStorage.removeItem(DOCK_DESKTOP_KEY);
+        localStorage.removeItem(DOCK_MOBILE_KEY);
       } catch (e) {}
       this._dockDraft = [...DEFAULT_DOCK_PATHS];
+      this._dockVisDraft = { desktop: true, mobile: true };
+      if (this.dockDesktopToggle) this.dockDesktopToggle.checked = true;
+      if (this.dockMobileToggle) this.dockMobileToggle.checked = true;
       this._renderDockCustomizerList();
     });
 
@@ -1342,9 +1403,56 @@ return baseclass.extend({
     );
     saveBtn.addEventListener("click", () => {
       this._saveDockPaths(this._dockDraft);
+      this._saveDockVisibility(this._dockVisDraft);
       this.closeDockCustomizer();
-      this.renderMobileDock();
+      this.renderDock();
     });
+
+    // Visibility toggles for desktop & mobile
+    this.dockDesktopToggle = E("input", {
+      type: "checkbox",
+      class: "dock-switch-input",
+      id: "dock-toggle-desktop",
+    });
+    this.dockDesktopToggle.addEventListener("change", (e) => {
+      this._dockVisDraft.desktop = e.target.checked;
+    });
+
+    this.dockMobileToggle = E("input", {
+      type: "checkbox",
+      class: "dock-switch-input",
+      id: "dock-toggle-mobile",
+    });
+    this.dockMobileToggle.addEventListener("change", (e) => {
+      this._dockVisDraft.mobile = e.target.checked;
+    });
+
+    const togglesSection = E("div", { class: "dock-modal-toggles" }, [
+      E("label", { class: "dock-toggle-item", for: "dock-toggle-desktop" }, [
+        E("div", { class: "dock-toggle-text" }, [
+          E("span", { class: "dock-toggle-title" }, [_("Show on Desktop")]),
+          E("span", { class: "dock-toggle-desc" }, [
+            _("Display bottom dock on wide screens"),
+          ]),
+        ]),
+        E("span", { class: "dock-switch" }, [
+          this.dockDesktopToggle,
+          E("span", { class: "dock-switch-slider" }),
+        ]),
+      ]),
+      E("label", { class: "dock-toggle-item", for: "dock-toggle-mobile" }, [
+        E("div", { class: "dock-toggle-text" }, [
+          E("span", { class: "dock-toggle-title" }, [_("Show on Mobile")]),
+          E("span", { class: "dock-toggle-desc" }, [
+            _("Display bottom dock on mobile viewports"),
+          ]),
+        ]),
+        E("span", { class: "dock-switch" }, [
+          this.dockMobileToggle,
+          E("span", { class: "dock-switch-slider" }),
+        ]),
+      ]),
+    ]);
 
     const titleId = "dock-modal-title";
     const panel = E(
@@ -1364,6 +1472,7 @@ return baseclass.extend({
             this.dockSelectedBadge,
           ]),
         ]),
+        togglesSection,
         this.dockSelectedBar,
         E("div", { class: "dock-modal-search" }, [this.dockSearchInput]),
         this.dockModalList,
@@ -1404,6 +1513,13 @@ return baseclass.extend({
   _renderDockCustomizer() {
     const current = this._resolveDockItems().map((i) => i.path);
     this._dockDraft = [...current];
+    this._dockVisDraft = this._getDockVisibility();
+    if (this.dockDesktopToggle) {
+      this.dockDesktopToggle.checked = this._dockVisDraft.desktop;
+    }
+    if (this.dockMobileToggle) {
+      this.dockMobileToggle.checked = this._dockVisDraft.mobile;
+    }
     this._renderDockCustomizerList();
   },
 
