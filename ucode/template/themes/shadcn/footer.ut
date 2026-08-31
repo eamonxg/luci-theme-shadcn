@@ -10,10 +10,12 @@
 
     <script>
       window.ShadcnSidebar = null;
+      window.ShadcnMenu = null;
       L.require('sidebar-shadcn').then(function (m) {
         window.ShadcnSidebar = m;
       });
-      L.require('menu-shadcn').then(function () {
+      L.require('menu-shadcn').then(function (m) {
+        window.ShadcnMenu = m;
         if (window.navigation) L.require('router-shadcn');
       });
     </script>
