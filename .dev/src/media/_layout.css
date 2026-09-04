@@ -75,10 +75,14 @@ html[data-sidebar-collapsed="true"] #sidebar {
 .sidebar-nav-item,
 .sidebar-accordion-item {
   @apply mb-0.5;
+
+  &.active > .sidebar-nav-parent {
+    @apply text-sidebar-active-fg;
+  }
 }
 
 .sidebar-nav-parent {
-  @apply text-sidebar-muted flex w-full cursor-pointer items-center gap-2.5 rounded-md border-0 bg-transparent px-2 py-1.5 text-left text-sm transition-colors;
+  @apply text-sidebar-muted flex w-full cursor-pointer appearance-none items-center justify-start gap-2.5 rounded-md border-0 bg-transparent px-2 py-1.5 text-left text-sm font-medium transition-colors duration-150;
 
   &:hover {
     @apply bg-sidebar-accent text-sidebar-accent-fg;
@@ -113,10 +117,6 @@ html[data-sidebar-collapsed="true"] #sidebar {
     .sidebar-chevron {
       @apply rotate-180;
     }
-  }
-
-  &.active > .sidebar-nav-parent {
-    @apply text-sidebar-active-fg;
   }
 }
 
