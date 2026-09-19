@@ -10,7 +10,7 @@ Write narrow `[data-page]`/class-scoped overrides with native declarations, stil
 
 The `@reference` + `@apply` route still _compiles_ for theme-repo patches and has real upsides — build-time validation (a typo'd utility fails the build; a typo'd `var()` fails silently at runtime) and the shared `dark:`/`md:`/`hover:` vocabulary — native is the default for the size numbers above, not a hard gate. App-shipped patches bypass the build entirely and have always been plain-CSS-only.
 
-Globally-applicable chrome tweaks (e.g. icon opacity) belong in `_shared.css`, not here.
+Globally-applicable chrome tweaks that should be applied to every LuCI admin page can use `patches/admin.css`. Since every LuCI web page has an `admin` path prefix, `header.ut` loads this file for all admin pages. Place it directly on the device at `/www/luci-static/shadcn/patches/admin.css`; it is discovered at render time and does not require a theme rebuild. This file is user-managed, so it remains outside the theme package's generated assets and survives theme upgrades.
 
 ## Discovery and matching
 
