@@ -10,7 +10,7 @@ Write narrow `[data-page]`/class-scoped overrides with native declarations, stil
 
 The `@reference` + `@apply` route still _compiles_ for theme-repo patches and has real upsides — build-time validation (a typo'd utility fails the build; a typo'd `var()` fails silently at runtime) and the shared `dark:`/`md:`/`hover:` vocabulary — native is the default for the size numbers above, not a hard gate. App-shipped patches bypass the build entirely and have always been plain-CSS-only.
 
-Globally-applicable chrome tweaks (e.g. icon opacity) belong in `_shared.css`, not here.
+Before writing a patch, ask whether the symptom is really page-specific. Something that breaks the same way on any app's page is a theme bug: fix it in the core CSS so every page gets the fix, and keep globally-applicable chrome tweaks (e.g. icon opacity) in `_shared.css`, not here. A patch is for what is genuinely local to one app — or, for a preference the theme should not adopt for everyone, the global `admin.css` case below.
 
 ## Discovery and matching
 
@@ -19,6 +19,8 @@ Globally-applicable chrome tweaks (e.g. icon opacity) belong in `_shared.css`, n
 `header.ut` discovers installed patches at render time via `fs.lsdir()` (no build-time allow-list) and matches them against the cumulative path-segment prefixes of the current page: a patch applies to its page and all subpages, matching only on real segment boundaries so a prefix never leaks onto a lookalike sibling app. All matching patches load (sorted, so a shorter/general name precedes a longer/specific one, which then cascades on top) — this also lets dynamically generated pages (e.g. one page per contact/device) be covered by a patch named after their fixed prefix.
 
 Because discovery is at render time, **any package — not just the theme — may drop a `<page-prefix>.css` into `luci-static/shadcn/patches/`** and it takes effect immediately, no theme rebuild required.
+
+**`patches/admin.css` is therefore the global patch.** Every admin page's path starts with `admin`, so the shortest prefix matches all of them; sorting loads it first and the page-specific patches cascade on top (the login page loads no patches at all). That is how a user carries a preference the theme should not ship for everyone — a CJK-friendly monospace UI font, say — without forking it: write the file by hand on the device at `/www/luci-static/shadcn/patches/admin.css`. The theme neither builds nor installs that path, so a theme upgrade leaves it alone.
 
 `PATCH_ALIASES` in `vite.config.ts` can duplicate one built payload (CSS and JS) under several page names when unrelated pages share it. It is currently empty — the log viewer ships only `patches/admin-status-logs.js`, whose prefix covers both log tabs on every supported release; its CSS is core-page styling and lives in `components/_syslog.css` inside `main.css`, where the `.syslog-view` markup contract is deliberately global so other packages can reuse the viewer. `_`-prefixed files in `patches/` are `@import`-only fragments, never entries.
 
