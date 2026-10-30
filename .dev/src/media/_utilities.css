@@ -48,24 +48,19 @@
   @apply whitespace-nowrap;
 }
 
-@keyframes shadcn-fade-in {
-  from {
-    opacity: 0;
+.fade-in,
+.fade-out {
+  @apply [transition:opacity_250ms_ease-in-out];
+}
+
+.fade-in {
+  @starting-style {
+    @apply opacity-0;
   }
 }
 
-/* Also content that lands after first paint: the view's top-level blocks
-   (full load and router swap; poll never re-inserts them) and a switched-in
-   form tab pane (the dashboard's polled tabs sit under .Dashboard). */
-.fade-in,
-#view > :not(.spinning),
-#view > .cbi-map > .cbi-map-tabbed > [data-tab-active="true"],
-.cbi-section-node-tabbed > [data-tab-active="true"] {
-  @apply animate-[shadcn-fade-in_250ms_ease_backwards];
-}
-
 .fade-out {
-  @apply pointer-events-none opacity-0 [transition:opacity_.4s];
+  @apply pointer-events-none opacity-0;
 }
 
 .spinning {

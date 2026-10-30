@@ -37,6 +37,18 @@ test("pruned login.css keeps every consumed variable resolvable", () => {
   );
 });
 
+test("page content appears without decorative entry fades", () => {
+  const css = read("shadcn/main.css");
+  assert.ok(
+    !css.includes("shadcn-fade-in"),
+    "decorative entry keyframe remains",
+  );
+  assert.ok(
+    !/#view>:not\(\.spinning\)[^{]*\{[^}]*\banimation:/.test(css),
+    "view contents still animate on entry",
+  );
+});
+
 // uhttpd serves identity bytes, so raw size is what every cold load pays.
 // Set 2026-09 from main 129213, login 10521, menu 15859, router 15771,
 // sidebar 6107, Inter latin 48256, logo 258.
