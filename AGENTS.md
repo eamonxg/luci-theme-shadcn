@@ -12,3 +12,11 @@ Deep dives live in `.dev/docs/`:
 - [router.md](.dev/docs/router.md) — the client-side router; read before touching navigation
 - [sidebar.md](.dev/docs/sidebar.md) — sidebar/menu rendering and the anti-flash cache
 - [mock-pages.md](.dev/docs/mock-pages.md) — styling third-party pages without a device
+
+## Key Agent Constraints
+
+When fixing UI or adding styles:
+
+- **Core LuCI vs. Patches**: Official LuCI pages (such as `admin/status`, `admin/network`, `admin/system`) and shared LuCI markup structures (like `.cbi-section`, `.ifacebox`) are **core LuCI**, not third-party packages. Never create a page patch (`src/media/patches/`) for them. Locate the corresponding component under `src/media/components/` (e.g. `_card.css`, `_table.css`) and fix it in core CSS.
+- **Unified Breakpoints**: Do not write ad-hoc raw `@media` queries with arbitrary pixel values (e.g. `@media (max-width: 900px)`). Use TailwindCSS standard responsive variants (`max-md:`, `md:`) to keep mobile and desktop breakpoints unified across the theme.
+- **CSS Authoring**: Always use TailwindCSS v4 `@apply` and CSS nesting in `src/media/components/`. Plain CSS is strictly restricted to `src/media/patches/`.

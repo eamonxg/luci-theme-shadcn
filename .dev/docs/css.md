@@ -18,6 +18,10 @@ Built CSS keeps Tailwind's native `@layer` structure. Theme partials (`_base.css
 
 `@custom-variant dark` keyed on `[data-darkmode=true]`, set by an inline script in `header.ut` before paint (reads `localStorage['shadcn.theme']`) to avoid a flash of the wrong theme.
 
+## Responsive breakpoints
+
+Use Tailwind's standard breakpoint modifiers (primarily `max-md:` for mobile and `md:` for desktop/tablet) rather than ad-hoc raw media queries (e.g. `@media (max-width: 900px)`). This keeps the mobile/desktop layout boundary consistent across all components.
+
 ## Icons, two sources
 
 - `.dev/src/assets/icons/` (Lucide SVGs) are referenced from CSS via the `@assets` alias as `mask-image`/`mask`, so they inherit `currentColor`.

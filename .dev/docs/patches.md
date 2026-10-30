@@ -10,7 +10,9 @@ Write narrow `[data-page]`/class-scoped overrides with native declarations, stil
 
 The `@reference` + `@apply` route still _compiles_ for theme-repo patches and has real upsides — build-time validation (a typo'd utility fails the build; a typo'd `var()` fails silently at runtime) and the shared `dark:`/`md:`/`hover:` vocabulary — native is the default for the size numbers above, not a hard gate. App-shipped patches bypass the build entirely and have always been plain-CSS-only.
 
-Before writing a patch, ask whether the symptom is really page-specific. Something that breaks the same way on any app's page is a theme bug: fix it in the core CSS so every page gets the fix, and keep globally-applicable chrome tweaks (e.g. icon opacity) in `_shared.css`, not here. A patch is for what is genuinely local to one app — or, for a preference the theme should not adopt for everyone, the global `admin.css` case below.
+Before writing a patch, ask whether the symptom is really page-specific. Something that breaks the same way on any app's page is a theme bug: fix it in the core CSS so every page gets the fix, and keep globally-applicable chrome tweaks (e.g. icon opacity) in `_shared.css`, not here. A patch is for what is genuinely local to one third-party app — or, for a preference the theme should not adopt for everyone, the global `admin.css` case below.
+
+**Official LuCI pages (e.g. `admin/status`, `admin/network`, `admin/system`) and shared LuCI markup structures (such as `.cbi-section`, `.ifacebox`, `.network-status-table`) are core LuCI, not third-party apps.** Never write a patch for standard LuCI pages or components; locate and modify the appropriate component in `src/media/components/` (e.g. `_card.css`, `_table.css`).
 
 ## Discovery and matching
 
