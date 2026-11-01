@@ -51,8 +51,22 @@
     @apply mb-3 flex flex-wrap justify-around gap-4 md:flex-nowrap;
   }
 
+  /* luci-mod-status (status/include/29_ports.js) lays the port map out as an
+     inline grid with `repeat(auto-fit, minmax(70px, 1fr))` tracks and no gap,
+     and every card carries an inline `margin:.25em;min-width:70px;max-width:100px`.
+     On a narrow screen auto-fit packs 4+ tracks of ~71px, which no longer fit
+     the 70px card once its horizontal margin is subtracted: the margin
+     collapses to a few pixels and the cards read as glued together. Give the
+     tracks a comfortable minimum there -- auto-fit then lands on two columns --
+     let the cards fill them, and move the spacing into the grid gap. */
   div[style*="display:grid"]:has(> .ifacebox) {
-    @apply place-items-center;
+    @apply place-items-center max-md:place-items-stretch max-md:gap-3;
+    @apply max-md:[grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]!;
+
+    /* Track and card width are inline styles written by LuCI. */
+    > .ifacebox {
+      @apply max-md:m-0! max-md:max-w-none!;
+    }
   }
 }
 

@@ -50,8 +50,9 @@ test("page content appears without decorative entry fades", () => {
 });
 
 // uhttpd serves identity bytes, so raw size is what every cold load pays.
-// Set 2026-09 from main 129213, login 10521, menu 15859, router 15771,
-// sidebar 6107, Inter latin 48256, logo 258.
+// Set 2026-11 from main 130197 (+346 for the narrow-screen port grid in
+// _card.css), login 10521, menu 15859, router 15771, sidebar 6107,
+// Inter latin 48256, logo 258.
 test("production assets stay within raw-transfer budgets", () => {
   const main = bytes("shadcn/main.css");
   const login = bytes("shadcn/login.css");
@@ -61,7 +62,7 @@ test("production assets stay within raw-transfer budgets", () => {
   const font = bytes("shadcn/inter-latin-wght-normal.woff2");
   const logo = bytes("shadcn/images/logo.svg");
 
-  assert.ok(main <= 130_000, `main.css ${main} B exceeds 130 KB`);
+  assert.ok(main <= 130_500, `main.css ${main} B exceeds 130.5 KB`);
   assert.ok(login <= 11_000, `login.css ${login} B exceeds 11 KB`);
   // 17.5K: palette tabs (third-level nodes, redirect-parent folding, legacy
   // recents mapping, parent-aware scoring, per-segment path words) added
