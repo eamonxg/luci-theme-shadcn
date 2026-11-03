@@ -68,11 +68,14 @@ test("production assets stay within raw-transfer budgets", () => {
   // recents mapping, parent-aware scoring, per-segment path words) added
   // ~1.2 KB; the admin total below moved by the same amount.
   assert.ok(menu <= 17_500, `menu-shadcn.js ${menu} B exceeds 17.5 KB`);
-  assert.ok(router <= 16_000, `router-shadcn.js ${router} B exceeds 16 KB`);
+  // 18 KiB: bounded dependency prewarm adds 2,035 B raw / 778 B gzip,
+  // with a two-request limit, retry/timeout handling and data-saver gates.
+  assert.ok(router <= 18_432, `router-shadcn.js ${router} B exceeds 18 KiB`);
   assert.ok(sidebar <= 6_500, `sidebar-shadcn.js ${sidebar} B exceeds 6.5 KB`);
   assert.ok(
-    main + menu + router + sidebar + font <= 217_500,
-    "admin assets exceed 217.5 KB",
+    // Only the router allowance grows: 18,432 - 16,000 = 2,432 B.
+    main + menu + router + sidebar + font <= 219_932,
+    "admin assets exceed 219,932 B",
   );
   assert.ok(login + font + logo <= 60_000, "login assets exceed 60 KB");
 });

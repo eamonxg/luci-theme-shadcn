@@ -49,6 +49,9 @@
 		<title>{{ striptags(((boardinfo && boardinfo.hostname) ? boardinfo.hostname : '?') + ((dispatched && dispatched.title) ? (' | ' + _(dispatched.title)) : '')) }}</title>
 		<script>
 			(function () {
+				{% if (blank_page): %}
+				try { sessionStorage.removeItem('shadcn.sidebar.cache'); } catch (e) {}
+				{% endif %}
 				var theme = localStorage.getItem('shadcn.theme') || 'device';
 				var dark = theme === 'dark' || (theme === 'device' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 				document.documentElement.setAttribute('data-darkmode', dark ? 'true' : 'false');
@@ -83,7 +86,7 @@
 		<script src="{{ resource }}/cbi.js"></script>
 	</head>
 
-	<body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(page, true) }}" data-asset-version="{# PKG_VERSION #}"{% if (length(patch_all)): %} data-patches="{{ entityencode(join(' ', patch_all), true) }}"{% endif %}>
+	<body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(page, true) }}" data-asset-version="{# PKG_VERSION #}"{% if (!blank_page): %} data-nav-stamp="{{ entityencode(join(':', [dispatcher.lang, ctx?.authuser ?? '', ctx?.authsession ?? '']), true) }}:{# PKG_VERSION #}"{% endif %}{% if (length(patch_all)): %} data-patches="{{ entityencode(join(' ', patch_all), true) }}"{% endif %}>
 		{% if (!blank_page): %}
 
 		<div
@@ -112,7 +115,10 @@
 					if (!raw) return;
 					var cache = JSON.parse(raw);
 					var sb = document.getElementById('sidebar');
-					if (!sb || !cache || cache.v !== 1 || cache.lang !== document.documentElement.lang) return;
+					// The HTML belongs to one user/session and asset version. Follow
+					// ui.menu.flushCache() too: package changes invalidate its menu.
+					var luci = Object.values(JSON.parse(sessionStorage.getItem('luci-session-store')) || {})[0];
+					if (!sb || !cache || cache.v !== 2 || cache.stamp !== document.body.dataset.navStamp || !luci || !luci.menu) return;
 
 					sb.innerHTML = cache.html;
 					sb.setAttribute('data-shadcn-built', '1');

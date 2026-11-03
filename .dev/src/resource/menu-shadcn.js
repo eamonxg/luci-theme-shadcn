@@ -39,13 +39,15 @@ const RECENTS_KEY = "shadcn.palette.recents";
 
 return baseclass.extend({
   __init__() {
+    // Branding and sidebar controls need no menu RPC. Start them while the
+    // authoritative tree loads; the sidebar's nav handlers are delegated.
+    this.renderSidebarChrome();
+    this.initUciIndicator();
+    document.dispatchEvent(new Event("shadcn-sidebar-ready"));
     ui.menu.load().then((tree) => {
-      this.renderSidebarChrome();
       this.render(tree);
-      this.initUciIndicator();
       this.cacheSidebar();
       window.addEventListener("pagehide", () => this.cacheSidebar());
-      document.dispatchEvent(new Event("shadcn-sidebar-ready"));
     });
   },
 
@@ -63,8 +65,8 @@ return baseclass.extend({
       sessionStorage.setItem(
         CACHE_KEY,
         JSON.stringify({
-          v: 1,
-          lang: document.documentElement.lang || "",
+          v: 2,
+          stamp: document.body.dataset.navStamp,
           html: sidebar.innerHTML,
           scroll: nav.scrollTop || 0,
         }),

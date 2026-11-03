@@ -13,6 +13,11 @@
 
 `htdocs/` is generated output checked into git. Rebuild it with `pnpm build`, or trigger the manual `frontend-assets-build.yml` workflow, which builds and commits `htdocs/**`.
 
+Install from `.dev/` using the pnpm version pinned in `package.json` and
+`pnpm install --frozen-lockfile`, as the asset workflow does. The shared router
+comes from the published `@eamonxg/luci-theme-devkit@0.3.2` package.
+See [navigation-loading.md](navigation-loading.md) for the integration details.
+
 ## Terser options that are load-bearing
 
 `.dev/src/resource/*.js` goes through terser (compress + local-scope mangle, no bundling); each file stays a standalone LuCI `L.require()`-able module. Two options must not be dropped:

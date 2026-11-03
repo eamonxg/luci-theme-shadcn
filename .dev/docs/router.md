@@ -9,7 +9,7 @@
 How the theme turns a menu click into an in-document view swap instead of a
 full page load, where it deliberately does not, and the invariants a router
 inside LuCI has to keep. Source: `.dev/src/resource/router-shadcn.js`,
-loaded from `footer.ut` after `menu-shadcn.js`. **No changes to luci-base
+requested from `footer.ut` in parallel with `menu-shadcn.js`; the router waits for the menu instance and shared menu tree before installing navigation handlers. **No changes to luci-base
 or to any view** — the router is additive theme JS plus small template hooks
 (a patch manifest, `data-shadcn-*` markers on the stylesheets header.ut
 itself renders, the asset version, a focusable `#maincontent`).
