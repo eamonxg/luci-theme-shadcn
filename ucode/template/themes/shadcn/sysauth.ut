@@ -4,8 +4,8 @@
  Licensed to the public under the Apache License 2.0.
 -#}
 
-{%const boardinfo = ubus.call('system', 'board') ?? {};-%}
-{% include('header', { blank_page: true }) %}
+{% const boardinfo = ubus.call('system', 'board') ?? {}; -%}
+{% include('header', { blank_page: true, prefetched_boardinfo: boardinfo }) %}
 <style>:root{--login-bg-image:url('{{ media }}/images/login-bg.jpeg')}</style>
 
 <main class="login-layout">
@@ -24,9 +24,9 @@
 			</div>
 
 			<form method="post" class="login-form">
-				{% if (fuser): %}
-				<div class="login-error animate-element animate-delay-200">
-					{{ _('Invalid username and/or password! Please try again.') }}
+				{% if (auth_message || fuser): %}
+				<div class="login-error{% if (auth_plugin): %} warning{% endif %} animate-element animate-delay-200">
+					{{ auth_message || _('Invalid username and/or password! Please try again.') }}
 				</div>
 				{% endif %}
 
@@ -42,7 +42,8 @@
 							id="luci_username"
 							placeholder="{{ _('Username') }}"
 							autocomplete="username"
-							{% if (duser): %}value="{{ entityencode(duser, true) }}"{% else %}value=""{% endif %}
+							value="{{ entityencode(duser ?? '', true) }}"
+							{% if (!duser): %}autofocus{% endif %}
 						>
 					</div>
 				</div>
@@ -59,13 +60,46 @@
 							id="luci_password"
 							placeholder="{{ _('Password') }}"
 							autocomplete="current-password"
-							autofocus
+							{% if (duser): %}autofocus{% endif %}
 						>
 						<button type="button" class="login-pw-toggle" id="pw-toggle" aria-label="{{ _('Reveal/hide password') }}">
 							<img src="{{ media }}/icons/eye.svg" id="pw-toggle-icon" width="16" height="16" alt="">
 						</button>
 					</div>
 				</div>
+
+				{% if (auth_fields): %}
+					{% for (let field in auth_fields): %}
+						<div class="login-field animate-element animate-delay-300">
+							<label class="login-label" for="{{ field.name }}">{{ _(field.label ?? field.name) }}</label>
+							<div class="login-input-glass">
+								<input
+									name="{{ field.name }}"
+									id="{{ field.name }}"
+									type="{{ field.type ?? 'text' }}"
+									{% if (field.placeholder): %}placeholder="{{ field.placeholder }}"{% endif %}
+									{% if (field.inputmode): %}inputmode="{{ field.inputmode }}"{% endif %}
+									{% if (field.pattern): %}pattern="{{ field.pattern }}"{% endif %}
+									{% if (field.maxlength): %}maxlength="{{ field.maxlength }}"{% endif %}
+									{% if (field.autocomplete): %}autocomplete="{{ field.autocomplete }}"{% endif %}
+									{% if (field.required): %}required{% endif %}
+								>
+							</div>
+						</div>
+					{% endfor %}
+				{% endif %}
+				{% if (auth_html): %}
+					<div class="login-field animate-element animate-delay-300">
+						{{ auth_html }}
+					</div>
+				{% endif %}
+				{% if (auth_assets): %}
+					{% for (let asset in auth_assets): %}
+						{% if (asset.type == 'script'): %}
+							<script src="{{ asset.src }}"></script>
+						{% endif %}
+					{% endfor %}
+				{% endif %}
 
 				<input type="hidden" name="luci_magic" value="{{ luci_magic }}">
 

@@ -140,8 +140,13 @@ html {
 
 /* ── Form elements ── */
 
-.login-error {
+.login-error,
+.alert-message {
   @apply border-destructive-a30 bg-destructive-a8 text-destructive mb-4 rounded-2xl border px-4 py-3 text-sm;
+
+  &.warning {
+    @apply border-warning-a30 bg-warning-a10 text-warning-soft-fg;
+  }
 }
 
 .login-field {
@@ -162,7 +167,11 @@ html {
   }
 
   input {
-    @apply text-foreground placeholder:text-muted-foreground w-full bg-transparent py-3.5 pr-10 pl-9 text-sm focus:outline-none;
+    @apply text-foreground placeholder:text-muted-foreground w-full bg-transparent px-4 py-3.5 text-sm focus:outline-none;
+  }
+
+  .login-input-icon ~ input {
+    @apply pl-9;
   }
 }
 

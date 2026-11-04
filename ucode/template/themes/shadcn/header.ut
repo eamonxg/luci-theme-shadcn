@@ -8,8 +8,8 @@
 	import { getuid, getspnam } from 'luci.core';
 	import { lsdir } from 'fs';
 
-	const boardinfo = ubus.call('system', 'board') ?? {};
-	const rootsp = getspnam('root');
+	const boardinfo = prefetched_boardinfo ?? (ubus.call('system', 'board') ?? {});
+	const rootsp = !blank_page ? getspnam('root') : null;
 	const root_pw_unset = (rootsp && rootsp.pwdp == '');
 
 	const page_segs = length(ctx?.request_path) ? ctx.request_path : (ctx?.path || []);
@@ -82,8 +82,10 @@
 		{% if (css): %}
 		<style data-luci-shell>{{ css }}</style>
 		{% endif %}
+		{% if (!blank_page): %}
 		<script src="{{ dispatcher.build_url('admin/translations', dispatcher.lang) }}"></script>
 		<script src="{{ resource }}/cbi.js"></script>
+		{% endif %}
 	</head>
 
 	<body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(page, true) }}" data-asset-version="{# PKG_VERSION #}"{% if (!blank_page): %} data-nav-stamp="{{ entityencode(join(':', [dispatcher.lang, ctx?.authuser ?? '', ctx?.authsession ?? '']), true) }}:{# PKG_VERSION #}"{% endif %}{% if (length(patch_all)): %} data-patches="{{ entityencode(join(' ', patch_all), true) }}"{% endif %}>
